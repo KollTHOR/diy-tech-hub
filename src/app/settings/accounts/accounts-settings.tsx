@@ -15,6 +15,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
+import { ChangePasswordDialog } from "@/components/change-password-dialog";
 import { useConfirmationDialog } from "@/hooks/use-confirmation-dialog";
 import { toast } from "sonner";
 
@@ -36,6 +37,8 @@ export default function AccountsSettings() {
   const [userAuthMethods, setUserAuthMethods] =
     useState<UserAuthMethods | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showChangePasswordDialog, setShowChangePasswordDialog] =
+    useState(false);
   const { confirm, dialogProps } = useConfirmationDialog();
 
   useEffect(() => {
@@ -52,14 +55,12 @@ export default function AccountsSettings() {
       toast.success(
         "Welcome! You can now add a password to your account for additional sign-in options."
       );
-      // Clear the URL parameter
       window.history.replaceState({}, "", "/settings/accounts");
     }
     if (urlParams.get("password-added") === "true") {
       toast.success(
         "Password added successfully! You now have multiple sign-in options."
       );
-      // Clear the URL parameter
       window.history.replaceState({}, "", "/settings/accounts");
     }
   }, []);
@@ -168,13 +169,7 @@ export default function AccountsSettings() {
 
   return (
     <>
-      <div className="max-w-2xl mx-auto space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold">Connected Accounts</h1>
-          <p className="text-muted-foreground">
-            Manage your linked social accounts for easy sign-in
-          </p>
-        </div>
+      <div className="space-y-6">
 
         <Alert>
           <AlertDescription>
@@ -279,28 +274,61 @@ export default function AccountsSettings() {
           </CardContent>
         </Card>
 
-        {/* Add Password Section - Only show if user doesn't have a password */}
-        {session?.user?.email &&
-          userAuthMethods &&
-          !userAuthMethods.hasPassword && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Password Authentication</CardTitle>
-                <CardDescription>
-                  Add a password to your account for additional sign-in options
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button asChild>
-                  <Link href="/add-password">Add Password to Account</Link>
-                </Button>
-              </CardContent>
-            </Card>
-          )}
+        {/* Password Management Section */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Password Authentication</CardTitle>
+            <CardDescription>
+              Manage your password for email/password authentication
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {/* Add Password - Only show if user doesn't have a password */}
+            {session?.user?.email &&
+              userAuthMethods &&
+              !userAuthMethods.hasPassword && (
+                <div className="flex items-center justify-between p-4 border rounded-lg">
+                  <div>
+                    <div className="font-medium">Password</div>
+                    <div className="text-sm text-muted-foreground">
+                      No password set - Add one for additional sign-in options
+                    </div>
+                  </div>
+                  <Button asChild>
+                    <Link href="/add-password">Add Password</Link>
+                  </Button>
+                </div>
+              )}
+
+            {/* Change Password - Only show if user has a password */}
+            {session?.user?.email &&
+              userAuthMethods &&
+              userAuthMethods.hasPassword && (
+                <div className="flex items-center justify-between p-4 border rounded-lg">
+                  <div>
+                    <div className="font-medium">Password</div>
+                    <div className="text-sm text-muted-foreground">
+                      Password authentication enabled 
+                    </div>
+                  </div>
+                  <Button
+                    variant="outline"
+                    onClick={() => setShowChangePasswordDialog(true)}
+                  >
+                    Change Password
+                  </Button>
+                </div>
+              )}
+          </CardContent>
+        </Card>
       </div>
 
-      {/* Render the confirmation dialog */}
+      {/* Render dialogs */}
       {dialogProps && <ConfirmationDialog {...dialogProps} />}
+      <ChangePasswordDialog
+        open={showChangePasswordDialog}
+        onOpenChange={setShowChangePasswordDialog}
+      />
     </>
   );
 }

@@ -11,18 +11,27 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export function Navbar() {
-  const { data: session, status } = useSession()
+  const { data: session, status } = useSession();
+
+  // Add this debugging
+  console.log("🔍 Navbar - Session status:", status);
+  console.log("🔍 Navbar - Session data:", session);
 
   return (
     <nav className="border-b">
       <div className="container mx-auto px-4 py-3 flex justify-between items-center">
         <Link href="/" className="text-2xl font-bold">
-          DIY Tech Hub
+          <span className="text-foreground font-bold">Makers</span>
+          <span className="font-bold italic bg-gradient-to-r from-orange-800 to-orange-400 bg-clip-text text-transparent pr-1">
+            Nest
+          </span>
         </Link>
 
         <div className="flex items-center gap-4">
+          <ThemeToggle />
           {status === "loading" ? (
             <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary"></div>
           ) : session ? (
@@ -55,13 +64,10 @@ export function Navbar() {
                   </div>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
-                    <Link href="/profile">Profile</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem asChild>
                     <Link href="/my-projects">My Projects</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link href="/settings/accounts">Account Settings</Link>
+                    <Link href="/settings">Settings</Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem

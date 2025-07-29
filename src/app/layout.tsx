@@ -9,7 +9,7 @@ import { Navbar } from "@/components/navbar";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "DIY Tech Hub",
+  title: "MakersNest",
   description: "Share your Arduino and DIY tech projects",
 };
 

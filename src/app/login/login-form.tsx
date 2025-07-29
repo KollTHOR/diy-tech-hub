@@ -42,6 +42,7 @@ export default function LoginForm() {
     setOauthOnlyError(null);
 
     try {
+      console.log("🔄 Attempting credentials sign in...");
       const result = await signIn("credentials", {
         email,
         password,
@@ -62,8 +63,9 @@ export default function LoginForm() {
         toast.error("Invalid email or password");
       } else {
         toast.success("Logged in successfully!");
-        router.push("/");
-        router.refresh();
+        setTimeout(() => {
+          window.location.href = "/"; // Use window.location instead of router
+        }, 1000);
       }
     } catch (error) {
       toast.error("Something went wrong");

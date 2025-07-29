@@ -19,7 +19,12 @@ export default function Home() {
   return (
     <div className="space-y-8">
       <div className="text-center space-y-4">
-        <h1 className="text-4xl font-bold">DIY Tech Hub</h1>
+        <h1 className="text-4xl font-bold">
+          <span className="text-foreground font-bold">Makers</span>
+          <span className="font-bold italic bg-gradient-to-r from-orange-800 to-orange-400 bg-clip-text text-transparent pr-1">
+            Nest
+          </span>
+        </h1>
         <p className="text-xl text-muted-foreground">
           Share your Arduino and DIY tech projects with the community
         </p>

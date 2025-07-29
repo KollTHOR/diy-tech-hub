@@ -1,80 +1,97 @@
-"use client";
-
-import { useSession } from "next-auth/react";
-import { Button } from "@/components/ui/button";
+import { prisma } from "@/lib/db";
+import { ProgressPostCard } from "@/components/progress-post-card";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import Link from "next/link";
 
-export default function Home() {
-  const { data: session, status } = useSession();
+export const revalidate = 60; // ISR every minute
 
-  if (status === "loading") {
-    return (
-      <div className="flex justify-center items-center min-h-[400px]">
-        <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary"></div>
-      </div>
-    );
-  }
+export default async function HomePage() {
+  /* --- Fetch --- */
+  const [posts, tags, popular] = await Promise.all([
+    prisma.progressPost.findMany({
+      where: { project: { isPublished: true } },
+      take: 10,
+      orderBy: { createdAt: "desc" },
+      include: {
+        author: { select: { id: true, name: true, image: true } },
+        project: {
+          select: {
+            id: true,
+            title: true,
+            imageUrl: true,
+            progress: true,
+            tags: { include: { tag: true } },
+          },
+        },
+        // Include comment count
+        _count: {
+          select: { comments: true },
+        },
+      },
+    }),
 
+    prisma.tag.findMany({
+      take: 15,
+      orderBy: { projects: { _count: "desc" } },
+    }),
+
+    prisma.project.findMany({
+      where: { isPublished: true },
+      take: 5,
+      orderBy: { progressPosts: { _count: "desc" } },
+      select: { id: true, title: true },
+    }),
+  ]);
+
+  /* --- Layout --- */
   return (
-    <div className="space-y-8">
-      <div className="text-center space-y-4">
-        <h1 className="text-4xl font-bold">
-          <span className="text-foreground font-bold">Makers</span>
-          <span className="font-bold italic bg-gradient-to-r from-orange-800 to-orange-400 bg-clip-text text-transparent pr-1">
-            Nest
-          </span>
-        </h1>
-        <p className="text-xl text-muted-foreground">
-          Share your Arduino and DIY tech projects with the community
-        </p>
-
-        {session ? (
-          <div className="space-y-2">
-            <p className="text-lg">Welcome back, {session.user?.name}! 👋</p>
-            <Button asChild size="lg">
-              <Link href="/create">Share Your Project</Link>
-            </Button>
-          </div>
-        ) : (
-          <div className="space-x-4">
-            <Button asChild size="lg">
-              <Link href="/register">Get Started</Link>
-            </Button>
-            <Button asChild variant="outline" size="lg">
-              <Link href="/login">Sign In</Link>
-            </Button>
-          </div>
-        )}
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {/* Placeholder project cards */}
-        {Array.from({ length: 6 }).map((_, i) => (
-          <Card key={i}>
-            <CardHeader>
-              <CardTitle>Sample Arduino Project {i + 1}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">
-                This is a placeholder for a DIY tech project featuring Arduino,
-                sensors, and creative solutions...
-              </p>
-              <div className="mt-4 flex flex-wrap gap-2">
-                <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
-                  Arduino
-                </span>
-                <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded">
-                  LED
-                </span>
-                <span className="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded">
-                  Sensor
-                </span>
-              </div>
-            </CardContent>
-          </Card>
+    <div className="container mx-auto flex flex-col lg:flex-row gap-8 py-8">
+      {/* Feed */}
+      <main className="flex-1 space-y-6">
+        {posts.map((post) => (
+          <ProgressPostCard key={post.id} post={post} />
         ))}
-      </div>
+      </main>
+
+      {/* Sidebar */}
+      <aside className="w-full lg:w-72 space-y-6">
+        {/* Tags */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm font-medium">Top Tags</CardTitle>
+          </CardHeader>
+          <CardContent className="flex flex-wrap gap-2">
+            {tags.map((t) => (
+              <span
+                key={t.id}
+                className="text-xs px-2 py-1 rounded-md border"
+                style={{ background: t.color ?? undefined }}
+              >
+                {t.name}
+              </span>
+            ))}
+          </CardContent>
+        </Card>
+
+        {/* Popular Projects */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm font-medium">
+              Popular Projects
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {popular.map((p) => (
+              <a
+                key={p.id}
+                href={`/projects/${p.id}`}
+                className="block text-sm underline hover:no-underline"
+              >
+                {p.title}
+              </a>
+            ))}
+          </CardContent>
+        </Card>
+      </aside>
     </div>
   );
 }

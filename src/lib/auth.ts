@@ -79,11 +79,6 @@ export const authOptions: NextAuthOptions = {
   },
   callbacks: {
     async jwt({ token, user, account }) {
-      console.log("🎫 JWT callback:", {
-        tokenEmail: token.email,
-        userEmail: user?.email,
-        provider: account?.provider,
-      });
 
       // Store user data in JWT token
       if (user) {
@@ -96,10 +91,7 @@ export const authOptions: NextAuthOptions = {
       return token;
     },
     async session({ session, token }) {
-      console.log("📋 Session callback (JWT):", {
-        sessionEmail: session.user?.email,
-        tokenEmail: token.email,
-      });
+      
 
       // Pass user data from JWT token to session
       if (session?.user && token) {
@@ -164,6 +156,5 @@ export const authOptions: NextAuthOptions = {
       return true;
     },
   },
-  debug: true,
 };
 

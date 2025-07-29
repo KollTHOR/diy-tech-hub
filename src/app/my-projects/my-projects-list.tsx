@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Plus, Edit, Eye, MessageCircle, Calendar, Clock } from "lucide-react";
+import Image from "next/image";
 
 interface Project {
   id: string;
@@ -148,7 +149,7 @@ export default function MyProjectsList({ projects }: MyProjectsListProps) {
 
             {project.imageUrl && (
               <div className="px-6 pb-3">
-                <img
+                <Image
                   src={project.imageUrl}
                   alt={project.title}
                   className="w-full h-32 object-cover rounded-md border"

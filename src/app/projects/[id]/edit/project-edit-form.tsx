@@ -22,11 +22,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
-import { X, Plus, Upload, ArrowLeft } from "lucide-react";
+import { X, Plus, Upload, ArrowLeft, Trash2 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
+import { ProjectDeleteDialog } from "@/components/project-delete-dialog";
+import { MilestoneInput } from "@/components/milestone-input";
 
 interface Tag {
   id: string;
@@ -34,6 +36,16 @@ interface Tag {
   slug: string;
   color: string | null;
   createdAt: Date;
+}
+
+interface Milestone {
+  id: string;
+  title: string;
+  description: string | null;
+  targetDate: Date;
+  isCompleted: boolean;
+  completedAt: Date | null;
+  order: number;
 }
 
 interface Project {
@@ -45,16 +57,22 @@ interface Project {
   status: string;
   progress: number;
   difficulty: string;
-  estimatedHours: number | null;
-  actualHours: number | null;
   isPublished: boolean;
   tags: Array<{
     tag: Tag;
   }>;
+  milestones: Milestone[]; // Add milestones to project interface
 }
 
 interface ProjectEditFormProps {
   project: Project;
+}
+
+interface MilestoneInputType {
+  title: string;
+  description: string;
+  targetDate: string;
+  isCompleted: boolean;
 }
 
 const DIFFICULTY_OPTIONS = [
@@ -112,6 +130,8 @@ export default function ProjectEditForm({ project }: ProjectEditFormProps) {
     project.imageUrl || ""
   );
 
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+
   // Form state initialized with project data
   const [formData, setFormData] = useState({
     title: project.title,
@@ -119,12 +139,30 @@ export default function ProjectEditForm({ project }: ProjectEditFormProps) {
     content: project.content,
     imageUrl: project.imageUrl || "",
     status: project.status,
-    progress: [project.progress],
     difficulty: project.difficulty,
-    estimatedHours: project.estimatedHours?.toString() || "",
-    actualHours: project.actualHours?.toString() || "",
     isPublished: project.isPublished,
   });
+
+  // Initialize milestones from project data
+  const [milestones, setMilestones] = useState<MilestoneInputType[]>(
+    project.milestones.length > 0
+      ? project.milestones
+          .sort((a, b) => a.order - b.order)
+          .map((m) => ({
+            title: m.title,
+            description: m.description || "",
+            targetDate: m.targetDate.toISOString().split("T")[0], // Convert to YYYY-MM-DD format
+            isCompleted: m.isCompleted,
+          }))
+      : [
+          {
+            title: "",
+            description: "",
+            targetDate: "",
+            isCompleted: false,
+          },
+        ]
+  );
 
   // Fetch available tags
   useEffect(() => {
@@ -215,6 +253,35 @@ export default function ProjectEditForm({ project }: ProjectEditFormProps) {
       return;
     }
 
+    // Milestone validation
+    if (milestones.length !== 5) {
+      toast.error("Please add exactly 5 milestones");
+      return;
+    }
+
+    const invalidMilestone = milestones.find(
+      (m) => !m.title.trim() || !m.targetDate
+    );
+    if (invalidMilestone) {
+      toast.error("Please fill in all milestone titles and dates");
+      return;
+    }
+
+    // Validate milestone dates are in chronological order
+    const sortedMilestones = [...milestones].sort(
+      (a, b) =>
+        new Date(a.targetDate).getTime() - new Date(b.targetDate).getTime()
+    );
+    for (let i = 1; i < sortedMilestones.length; i++) {
+      if (
+        new Date(sortedMilestones[i].targetDate) <=
+        new Date(sortedMilestones[i - 1].targetDate)
+      ) {
+        toast.error("Milestone dates must be in chronological order");
+        return;
+      }
+    }
+
     setIsLoading(true);
 
     try {
@@ -224,16 +291,10 @@ export default function ProjectEditForm({ project }: ProjectEditFormProps) {
         content: formData.content.trim(),
         imageUrl: formData.imageUrl,
         status: formData.status,
-        progress: formData.progress[0],
         difficulty: formData.difficulty,
-        estimatedHours: formData.estimatedHours
-          ? parseInt(formData.estimatedHours)
-          : null,
-        actualHours: formData.actualHours
-          ? parseInt(formData.actualHours)
-          : null,
         isPublished: formData.isPublished,
         tagIds: selectedTags.map((t) => t.id),
+        milestones: milestones, // Add milestones to the request
       };
 
       const response = await fetch(`/api/projects/${project.id}`, {
@@ -263,16 +324,27 @@ export default function ProjectEditForm({ project }: ProjectEditFormProps) {
         <Button variant="ghost" size="sm" asChild>
           <Link href={`/projects/${project.id}`}>
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to my projects
+            Back to Project
           </Link>
         </Button>
       </div>
 
-      <div>
-        <h1 className="text-3xl font-bold">Edit Project</h1>
-        <p className="text-muted-foreground">
-          Update your project details and content
-        </p>
+      <div className="flex justify-between items-start">
+        <div>
+          <h1 className="text-3xl font-bold">Edit Project</h1>
+          <p className="text-muted-foreground">
+            Update your project details and content
+          </p>
+        </div>
+        <Button
+          variant="destructive"
+          size="sm"
+          onClick={() => setShowDeleteDialog(true)}
+          className="gap-2"
+        >
+          <Trash2 className="h-4 w-4" />
+          Delete Project
+        </Button>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-8">
@@ -354,9 +426,11 @@ export default function ProjectEditForm({ project }: ProjectEditFormProps) {
 
               {imagePreview && (
                 <div className="relative w-full max-w-md">
-                  <img
+                  <Image
                     src={imagePreview}
                     alt="Project preview"
+                    width={400}
+                    height={192}
                     className="w-full h-48 object-cover rounded-lg border"
                   />
                   <Button
@@ -377,7 +451,7 @@ export default function ProjectEditForm({ project }: ProjectEditFormProps) {
           </CardContent>
         </Card>
 
-        {/* Tags - Same as create form */}
+        {/* Tags */}
         <Card>
           <CardHeader>
             <CardTitle>Tags *</CardTitle>
@@ -458,10 +532,13 @@ export default function ProjectEditForm({ project }: ProjectEditFormProps) {
           </CardContent>
         </Card>
 
-        {/* Project Details */}
+        {/* Milestones - Replace the estimated/actual hours section */}
+        <MilestoneInput milestones={milestones} onChange={setMilestones} />
+
+        {/* Project Settings */}
         <Card>
           <CardHeader>
-            <CardTitle>Project Details</CardTitle>
+            <CardTitle>Project Settings</CardTitle>
             <CardDescription>
               Update project status and information
             </CardDescription>
@@ -518,49 +595,6 @@ export default function ProjectEditForm({ project }: ProjectEditFormProps) {
                 </Select>
               </div>
             </div>
-
-            <div className="space-y-2">
-              <Label>Project Progress: {formData.progress[0]}%</Label>
-              <Slider
-                value={formData.progress}
-                onValueChange={(value) => handleInputChange("progress", value)}
-                max={100}
-                step={5}
-                className="w-full"
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <Label htmlFor="estimatedHours">Estimated Hours</Label>
-                <Input
-                  id="estimatedHours"
-                  type="number"
-                  placeholder="Estimated time to complete"
-                  value={formData.estimatedHours}
-                  onChange={(e) =>
-                    handleInputChange("estimatedHours", e.target.value)
-                  }
-                  min="1"
-                  max="1000"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="actualHours">Actual Hours</Label>
-                <Input
-                  id="actualHours"
-                  type="number"
-                  placeholder="Time actually spent"
-                  value={formData.actualHours}
-                  onChange={(e) =>
-                    handleInputChange("actualHours", e.target.value)
-                  }
-                  min="1"
-                  max="1000"
-                />
-              </div>
-            </div>
           </CardContent>
         </Card>
 
@@ -604,6 +638,14 @@ export default function ProjectEditForm({ project }: ProjectEditFormProps) {
             Cancel
           </Button>
         </div>
+
+        {/* Delete Confirmation Dialog */}
+        <ProjectDeleteDialog
+          open={showDeleteDialog}
+          onOpenChange={setShowDeleteDialog}
+          projectId={project.id}
+          projectName={project.title}
+        />
       </form>
     </div>
   );

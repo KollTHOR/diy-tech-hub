@@ -1,202 +1,114 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { calculateProgressFromMilestones } from "@/lib/milestone-utils";
 
 // POST - Create new project
 export async function POST(req: NextRequest) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
-    }
-
     const {
       title,
       description,
       content,
       imageUrl,
-      status,
-      progress,
       difficulty,
-      estimatedHours,
+      status,
       isPublished,
-      tagIds,
+      tags,
+      milestones,
     } = await req.json();
 
     // Validation
-    if (!title?.trim()) {
+    if (!title || !content) {
       return NextResponse.json(
-        { error: "Project title is required" },
+        { error: "Title and content are required" },
         { status: 400 }
       );
     }
 
-    if (!content?.trim()) {
+    // FIXED: Remove tag requirement - tags are optional
+    // if (!tags || tags.length === 0) {
+    //   return NextResponse.json({ error: "At least one tag is required" }, { status: 400 });
+    // }
+
+    if (!milestones || milestones.length === 0) {
       return NextResponse.json(
-        { error: "Project content is required" },
+        { error: "At least one milestone is required" },
         { status: 400 }
       );
     }
 
-    if (!tagIds || tagIds.length === 0) {
-      return NextResponse.json(
-        { error: "At least one tag is required" },
-        { status: 400 }
-      );
-    }
+    // Validate milestone dates are in order
+    const sortedMilestones = [...milestones].sort(
+      (a, b) =>
+        new Date(a.targetDate).getTime() - new Date(b.targetDate).getTime()
+    );
 
-    // Create project with tags
+    // Create project with tags and milestones
     const project = await prisma.project.create({
       data: {
-        title: title.trim(),
-        description: description?.trim() || null,
-        content: content.trim(),
-        imageUrl: imageUrl || null,
-        status: status || "PLANNING",
-        progress: progress || 0,
-        difficulty: difficulty || "BEGINNER",
-        estimatedHours: estimatedHours || null,
-        isPublished: isPublished || false,
+        title,
+        description,
+        content,
+        imageUrl,
+        difficulty,
+        status,
+        isPublished,
         authorId: session.user.id,
-        tags: {
-          create: tagIds.map((tagId: string) => ({
-            tag: { connect: { id: tagId } },
+        progress: 0, // Will be calculated after milestones are created
+        // Create tags relationship - handle empty tags array
+        tags:
+          tags && tags.length > 0
+            ? {
+                create: tags.map((tagId: string, index: number) => ({
+                  tag: {
+                    connect: {
+                      id: tagId,
+                    },
+                  },
+                })),
+              }
+            : undefined,
+        // Create milestones
+        milestones: {
+          create: sortedMilestones.map((milestone: any, index: number) => ({
+            title: milestone.title,
+            description: milestone.description,
+            targetDate: new Date(milestone.targetDate),
+            isCompleted: milestone.isCompleted || false,
+            order: index + 1,
           })),
         },
       },
       include: {
-        author: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
         tags: {
           include: {
             tag: true,
           },
         },
+        milestones: true,
       },
     });
 
-    return NextResponse.json(project);
+    // Calculate and update progress based on milestones
+    const progress = calculateProgressFromMilestones(project.milestones);
+    await prisma.project.update({
+      where: { id: project.id },
+      data: { progress },
+    });
+
+    return NextResponse.json({ ...project, progress });
   } catch (error) {
-    console.error("Create project error:", error);
+    console.error("Project creation error:", error);
     return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
-  }
-}
-
-export async function PUT(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
-  try {
-    const session = await getServerSession(authOptions);
-
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
-    }
-
-    const {
-      title,
-      description,
-      content,
-      imageUrl,
-      status,
-      progress,
-      difficulty,
-      estimatedHours,
-      actualHours,
-      isPublished,
-      tagIds,
-    } = await req.json();
-
-    // Verify project ownership
-    const existingProject = await prisma.project.findUnique({
-      where: {
-        id: params.id,
-        authorId: session.user.id, // Ensure user owns the project
-      },
-    });
-
-    if (!existingProject) {
-      return NextResponse.json(
-        { error: "Project not found or access denied" },
-        { status: 404 }
-      );
-    }
-
-    // Validation
-    if (!title?.trim()) {
-      return NextResponse.json(
-        { error: "Project title is required" },
-        { status: 400 }
-      );
-    }
-
-    if (!content?.trim()) {
-      return NextResponse.json(
-        { error: "Project content is required" },
-        { status: 400 }
-      );
-    }
-
-    if (!tagIds || tagIds.length === 0) {
-      return NextResponse.json(
-        { error: "At least one tag is required" },
-        { status: 400 }
-      );
-    }
-
-    // Update project with tags
-    const updatedProject = await prisma.project.update({
-      where: { id: params.id },
-      data: {
-        title: title.trim(),
-        description: description?.trim() || null,
-        content: content.trim(),
-        imageUrl: imageUrl || null,
-        status: status || "PLANNING",
-        progress: progress || 0,
-        difficulty: difficulty || "BEGINNER",
-        estimatedHours: estimatedHours || null,
-        actualHours: actualHours || null,
-        isPublished: isPublished || false,
-        // Update tags - remove old ones and add new ones
-        tags: {
-          deleteMany: {}, // Remove all existing tags
-          create: tagIds.map((tagId: string) => ({
-            tag: { connect: { id: tagId } },
-          })),
-        },
-      },
-      include: {
-        author: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
-        tags: {
-          include: {
-            tag: true,
-          },
-        },
-      },
-    });
-
-    return NextResponse.json(updatedProject);
-  } catch (error) {
-    console.error("Update project error:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
+      { error: "Failed to create project" },
       { status: 500 }
     );
   }

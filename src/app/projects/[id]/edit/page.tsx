@@ -4,40 +4,43 @@ import { requireAuth } from "@/lib/auth-utils";
 import ProjectEditForm from "./project-edit-form";
 
 interface ProjectEditPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 async function getProject(id: string, userId: string) {
-  try {
-    const project = await prisma.project.findUnique({
-      where: {
-        id,
-        // Ensure user can only edit their own projects
-        authorId: userId,
-      },
-      include: {
-        tags: {
-          include: {
-            tag: true,
-          },
+  const project = await prisma.project.findUnique({
+    where: { id },
+    include: {
+      tags: {
+        include: {
+          tag: true,
         },
       },
-    });
+      // Add milestones to the query
+      milestones: {
+        orderBy: { order: "asc" },
+      },
+    },
+  });
 
-    return project;
-  } catch (error) {
-    console.error("Failed to fetch project for editing:", error);
+  // Ensure user can only edit their own projects
+  if (project && project.authorId !== userId) {
     return null;
   }
+
+  return project;
 }
 
 export default async function ProjectEditPage({
   params,
 }: ProjectEditPageProps) {
   const session = await requireAuth();
-  const project = await getProject(params.id, session.user.id);
+
+  // Fix: Await params before accessing its properties
+  const { id } = await params;
+  const project = await getProject(id, session.user.id);
 
   if (!project) {
     notFound();

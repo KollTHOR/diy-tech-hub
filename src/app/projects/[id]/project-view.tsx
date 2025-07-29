@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
@@ -21,9 +20,13 @@ import {
   User,
   Edit,
   MessageCircle,
-  ExternalLink,
   ArrowLeft,
+  Trash2,
 } from "lucide-react";
+import { ProgressPostForm } from "@/components/progress-post-form";
+import Image from "next/image";
+import { ProjectDeleteDialog } from "@/components/project-delete-dialog";
+import { useState } from "react";
 
 interface ProjectViewProps {
   project: {
@@ -62,101 +65,160 @@ interface ProjectViewProps {
         name: string | null;
       };
     }>;
+    // Add progress posts
+    progressPosts: Array<{
+      id: string;
+      title: string;
+      content: string;
+      imageUrl: string | null;
+      createdAt: Date;
+      author: {
+        id: string;
+        name: string | null;
+        image: string | null;
+      };
+    }>;
     _count: {
       comments: number;
     };
   };
 }
 
-const STATUS_COLORS = {
-  PLANNING:
-    "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300",
-  IN_PROGRESS: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300",
-  COMPLETED:
-    "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
-  ON_HOLD:
-    "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300",
-  CANCELLED: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300",
-};
-
-const DIFFICULTY_COLORS = {
-  BEGINNER: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
-  INTERMEDIATE:
-    "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300",
-  ADVANCED:
-    "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300",
-  EXPERT: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300",
-};
-
 export default function ProjectView({ project }: ProjectViewProps) {
   const { data: session } = useSession();
-  const isAuthor = session?.user?.id === project.author.id;
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   return (
-    <div className="max-w-4xl mx-auto p-6 space-y-8">
-      {/* Header */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="sm" asChild>
-              <Link href="/my-projects">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to my projects
-              </Link>
-            </Button>
-            {!project.isPublished && (
-              <Badge
-                variant="outline"
-                className="border-orange-500 text-orange-600"
-              >
-                Draft
-              </Badge>
-            )}
-          </div>
-          {isAuthor && (
-            <Button asChild>
-              <Link href={`/projects/${project.id}/edit`}>
-                <Edit className="h-4 w-4 mr-2" />
-                Edit Project
-              </Link>
-            </Button>
-          )}
-        </div>
-
-        <div>
-          <h1 className="text-4xl font-bold mb-4">{project.title}</h1>
-          {project.description && (
-            <p className="text-xl text-muted-foreground mb-6">
-              {project.description}
-            </p>
-          )}
-        </div>
-
-        {/* Project Image */}
-        {project.imageUrl && (
-          <div className="w-full max-w-2xl mx-auto">
-            <img
-              src={project.imageUrl}
-              alt={project.title}
-              className="w-full h-64 md:h-96 object-cover rounded-lg border"
-            />
-          </div>
-        )}
-      </div>
-
+    <div className="container mx-auto py-8">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Main Content */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-2 space-y-8">
+          {/* Header with project title and actions */}
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div className="flex items-center gap-2">
+              <Link
+                href="/"
+                className="text-muted-foreground hover:text-foreground"
+              >
+                <ArrowLeft className="h-4 w-4" />
+              </Link>
+              <h1 className="text-3xl font-bold">{project.title}</h1>
+            </div>
+
+            <div className="flex gap-2">
+              {/* Add Progress Post button for project owners */}
+              {session?.user?.id === project.author.id && (
+                <ProgressPostForm
+                  projectId={project.id}
+                  projectTitle={project.title}
+                />
+              )}
+
+              {/* Existing Edit button */}
+              {session?.user?.id === project.author.id && (
+                <Button asChild variant="outline">
+                  <Link href={`/projects/${project.id}/edit`}>
+                    <Edit className="h-4 w-4 mr-2" />
+                    Edit Project
+                  </Link>
+                </Button>
+              )}
+
+              {/* Delete button */}
+              {session?.user?.id === project.author.id && (
+                <Button
+                  variant="destructive"
+                  onClick={() => setShowDeleteDialog(true)}
+                  className="gap-2"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Delete
+                </Button>
+              )}
+            </div>
+          </div>
+
+          {/* Project Image */}
+          {project.imageUrl && (
+            <div className="w-full">
+              <Image
+                src={project.imageUrl}
+                alt={project.title}
+                className="w-full h-64 sm:h-80 object-cover rounded-lg border"
+              />
+            </div>
+          )}
+
+          {/* Project Description */}
+          {project.description && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Description</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">{project.description}</p>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Project Content */}
           <Card>
             <CardHeader>
               <CardTitle>Project Details</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="prose max-w-none dark:prose-invert">
-                <div className="whitespace-pre-wrap">{project.content}</div>
+              <div className="prose max-w-none">
+                <p className="whitespace-pre-wrap">{project.content}</p>
               </div>
             </CardContent>
           </Card>
+
+          {/* Progress Posts Section */}
+          {project.progressPosts && project.progressPosts.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Progress Updates</CardTitle>
+                <CardDescription>
+                  Follow the journey of this project through these progress
+                  updates
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {project.progressPosts.map((post) => (
+                  <div
+                    key={post.id}
+                    className="border-l-2 border-border pl-4 space-y-2"
+                  >
+                    <div className="flex items-center justify-between">
+                      <h3 className="font-semibold">{post.title}</h3>
+                      <Badge variant="outline">
+                        {formatDistanceToNow(post.createdAt, {
+                          addSuffix: true,
+                        })}
+                      </Badge>
+                    </div>
+
+                    {post.imageUrl && (
+                      <Image
+                        src={post.imageUrl}
+                        alt={post.title}
+                        className="w-full h-48 object-cover rounded-lg border"
+                      />
+                    )}
+
+                    <p className="text-muted-foreground whitespace-pre-wrap">
+                      {post.content}
+                    </p>
+
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <User className="h-3 w-3" />
+                      <span>{post.author.name || "Unknown"}</span>
+                    </div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          )}
 
           {/* Comments Section */}
           <Card>
@@ -172,33 +234,29 @@ export default function ProjectView({ project }: ProjectViewProps) {
                   {project.comments.map((comment) => (
                     <div
                       key={comment.id}
-                      className="flex gap-3 p-4 border rounded-lg"
+                      className="border-l-2 border-border pl-4"
                     >
-                      <Avatar className="h-8 w-8">
-                        <AvatarFallback>
-                          {comment.author.name?.[0]?.toUpperCase() || "U"}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <span className="font-medium text-sm">
-                            {comment.author.name || "Anonymous"}
-                          </span>
-                          <span className="text-xs text-muted-foreground">
-                            {formatDistanceToNow(new Date(comment.createdAt), {
-                              addSuffix: true,
-                            })}
-                          </span>
-                        </div>
-                        <p className="text-sm">{comment.content}</p>
+                      <div className="flex items-center gap-2 mb-2">
+                        <Avatar className="h-6 w-6">
+                          <AvatarFallback className="text-xs">
+                            {comment.author.name?.[0] || "?"}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="text-sm font-medium">
+                          {comment.author.name || "Unknown"}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          {formatDistanceToNow(comment.createdAt, {
+                            addSuffix: true,
+                          })}
+                        </span>
                       </div>
+                      <p className="text-sm">{comment.content}</p>
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="text-muted-foreground text-center py-8">
-                  No comments yet. Be the first to comment!
-                </p>
+                <p className="text-muted-foreground">No comments yet.</p>
               )}
             </CardContent>
           </Card>
@@ -209,111 +267,90 @@ export default function ProjectView({ project }: ProjectViewProps) {
           {/* Project Info */}
           <Card>
             <CardHeader>
-              <CardTitle>Project Information</CardTitle>
+              <CardTitle>Project Info</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               {/* Author */}
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
                 <User className="h-4 w-4 text-muted-foreground" />
-                <div>
-                  <div className="font-medium">
-                    {project.author.name || "Anonymous"}
-                  </div>
-                  <div className="text-xs text-muted-foreground">Creator</div>
-                </div>
+                <span className="text-sm">
+                  <span className="text-muted-foreground">Created by:</span>{" "}
+                  {project.author.name || "Unknown"}
+                </span>
               </div>
 
               {/* Created Date */}
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
                 <Calendar className="h-4 w-4 text-muted-foreground" />
-                <div>
-                  <div className="font-medium">
-                    {formatDistanceToNow(new Date(project.createdAt), {
-                      addSuffix: true,
-                    })}
-                  </div>
-                  <div className="text-xs text-muted-foreground">Created</div>
-                </div>
+                <span className="text-sm">
+                  <span className="text-muted-foreground">Created:</span>{" "}
+                  {formatDistanceToNow(project.createdAt, { addSuffix: true })}
+                </span>
               </div>
 
               {/* Status */}
-              <div className="space-y-2">
-                <div className="text-sm font-medium">Status</div>
-                <Badge
-                  className={
-                    STATUS_COLORS[project.status as keyof typeof STATUS_COLORS]
-                  }
-                >
-                  {project.status.replace("_", " ")}
-                </Badge>
+              <div className="flex items-center gap-2">
+                <span className="text-sm">
+                  <span className="text-muted-foreground">Status:</span>{" "}
+                  <Badge variant="outline">{project.status}</Badge>
+                </span>
               </div>
 
               {/* Difficulty */}
-              <div className="space-y-2">
-                <div className="text-sm font-medium">Difficulty</div>
-                <Badge
-                  className={
-                    DIFFICULTY_COLORS[
-                      project.difficulty as keyof typeof DIFFICULTY_COLORS
-                    ]
-                  }
-                >
-                  {project.difficulty}
-                </Badge>
+              <div className="flex items-center gap-2">
+                <span className="text-sm">
+                  <span className="text-muted-foreground">Difficulty:</span>{" "}
+                  <Badge variant="outline">{project.difficulty}</Badge>
+                </span>
               </div>
 
               {/* Progress */}
               <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="font-medium">Progress</span>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Progress:</span>
                   <span>{project.progress}%</span>
                 </div>
-                <Progress value={project.progress} className="w-full" />
+                <Progress value={project.progress} />
               </div>
 
               {/* Estimated Hours */}
               {project.estimatedHours && (
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
                   <Clock className="h-4 w-4 text-muted-foreground" />
-                  <div>
-                    <div className="font-medium">{project.estimatedHours}h</div>
-                    <div className="text-xs text-muted-foreground">
-                      Estimated
-                    </div>
+                  <span className="text-sm">
+                    <span className="text-muted-foreground">Estimated:</span>{" "}
+                    {project.estimatedHours}h
+                  </span>
+                </div>
+              )}
+
+              {/* Tags */}
+              {project.tags.length > 0 && (
+                <div className="space-y-2">
+                  <span className="text-sm text-muted-foreground">Tags:</span>
+                  <div className="flex flex-wrap gap-2">
+                    {project.tags.map(({ tag }) => (
+                      <Badge
+                        key={tag.id}
+                        variant="outline"
+                        style={{ backgroundColor: tag.color || undefined }}
+                      >
+                        {tag.name}
+                      </Badge>
+                    ))}
                   </div>
                 </div>
               )}
             </CardContent>
           </Card>
-
-          {/* Tags */}
-          {project.tags.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Tags</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-wrap gap-2">
-                  {project.tags.map(({ tag }) => (
-                    <Badge
-                      key={tag.id}
-                      variant="secondary"
-                      className="cursor-pointer hover:bg-muted"
-                      style={{
-                        backgroundColor: tag.color
-                          ? `${tag.color}20`
-                          : undefined,
-                      }}
-                    >
-                      {tag.name}
-                    </Badge>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
         </div>
       </div>
+      <ProjectDeleteDialog
+        open={showDeleteDialog}
+        onOpenChange={setShowDeleteDialog}
+        projectId={project.id}
+        projectName={project.title}
+      />
     </div>
   );
 }

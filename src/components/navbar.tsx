@@ -16,10 +16,6 @@ import { ThemeToggle } from "@/components/theme-toggle";
 export function Navbar() {
   const { data: session, status } = useSession();
 
-  // Add this debugging
-  console.log("🔍 Navbar - Session status:", status);
-  console.log("🔍 Navbar - Session data:", session);
-
   return (
     <nav className="border-b">
       <div className="container mx-auto px-4 py-3 flex justify-between items-center">

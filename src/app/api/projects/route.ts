@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+// src/app/api/projects/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { calculateProgressFromMilestones } from "@/lib/milestone-utils";
 
 // POST - Create new project
 export async function POST(req: NextRequest) {
@@ -33,11 +33,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // FIXED: Remove tag requirement - tags are optional
-    // if (!tags || tags.length === 0) {
-    //   return NextResponse.json({ error: "At least one tag is required" }, { status: 400 });
-    // }
-
     if (!milestones || milestones.length === 0) {
       return NextResponse.json(
         { error: "At least one milestone is required" },
@@ -62,12 +57,11 @@ export async function POST(req: NextRequest) {
         status,
         isPublished,
         authorId: session.user.id,
-        progress: 0, // Will be calculated after milestones are created
-        // Create tags relationship - handle empty tags array
+        // ✅ Removed progress field
         tags:
           tags && tags.length > 0
             ? {
-                create: tags.map((tagId: string, index: number) => ({
+                create: tags.map((tagId: string) => ({
                   tag: {
                     connect: {
                       id: tagId,
@@ -76,7 +70,6 @@ export async function POST(req: NextRequest) {
                 })),
               }
             : undefined,
-        // Create milestones
         milestones: {
           create: sortedMilestones.map((milestone: any, index: number) => ({
             title: milestone.title,
@@ -97,14 +90,9 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Calculate and update progress based on milestones
-    const progress = calculateProgressFromMilestones(project.milestones);
-    await prisma.project.update({
-      where: { id: project.id },
-      data: { progress },
-    });
+    // ✅ No longer need to calculate and update progress
 
-    return NextResponse.json({ ...project, progress });
+    return NextResponse.json(project);
   } catch (error) {
     console.error("Project creation error:", error);
     return NextResponse.json(

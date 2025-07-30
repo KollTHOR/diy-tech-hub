@@ -37,7 +37,6 @@ async function getProject(id: string) {
           createdAt: "desc",
         },
       },
-      // Add progress posts if you want them
       progressPosts: {
         include: {
           author: {
@@ -52,7 +51,23 @@ async function getProject(id: string) {
           createdAt: "desc",
         },
       },
-      // Fix the _count - remove it for now or use proper syntax
+      milestones: {
+        select: {
+          id: true,
+          projectId: true, // <-- ADD THIS
+          title: true,
+          description: true,
+          targetDate: true,
+          isCompleted: true,
+          completedAt: true,
+          order: true,
+          createdAt: true, // <-- ADD THIS
+          updatedAt: true,
+        },
+        orderBy: {
+          order: "asc",
+        },
+      },
       _count: {
         select: {
           comments: true,
@@ -63,6 +78,7 @@ async function getProject(id: string) {
 
   return project;
 }
+
 
 
 export default async function ProjectPage({ params }: ProjectPageProps) {

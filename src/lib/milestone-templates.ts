@@ -1,3 +1,4 @@
+import { MilestoneTemplate } from "@/types/project";
 import {
   ClipboardList,
   Brush,
@@ -10,17 +11,6 @@ import {
   Flag,
   BarChart2,
 } from "lucide-react";
-
-import type { LucideIcon } from "lucide-react";
-
-export interface MilestoneTemplate {
-  id: string;
-  name: string;
-  description: string;
-  suggestedDuration: number; // days from project start
-  category: "planning" | "development" | "testing" | "launch" | "review";
-  icon: LucideIcon;
-}
 
 export const MILESTONE_TEMPLATES: MilestoneTemplate[] = [
   {

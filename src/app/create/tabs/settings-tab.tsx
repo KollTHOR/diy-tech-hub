@@ -17,11 +17,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-interface FormData {
-  difficulty: string;
-  status: string;
-  isPublished: boolean;
-}
+import type {FormData} from "@/types/project";
 
 interface SettingsTabProps {
   formData: FormData;

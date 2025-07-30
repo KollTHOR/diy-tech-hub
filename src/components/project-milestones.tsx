@@ -20,16 +20,8 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { getMilestoneStatus } from "@/lib/milestone-utils";
+import { Milestone } from "@prisma/client";
 
-interface Milestone {
-  id: string;
-  title: string;
-  description: string | null;
-  targetDate: Date;
-  isCompleted: boolean;
-  completedAt: Date | null;
-  order: number;
-}
 
 interface ProjectMilestonesProps {
   projectId: string;

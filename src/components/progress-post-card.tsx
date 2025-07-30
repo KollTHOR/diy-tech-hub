@@ -1,12 +1,11 @@
-"use client";
-
+// src/components/progress-post-card.tsx
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import Image from "next/image";
 import { ProgressPostComments } from "./progress-post-comments";
+import { ProjectMilestoneProgressBar } from "./project-milestone-progress-bar";
 
 interface ProgressPostCardProps {
   post: {
@@ -19,8 +18,17 @@ interface ProgressPostCardProps {
       id: string;
       title: string;
       imageUrl: string | null;
-      progress: number;
       tags: { tag: { id: string; name: string; color: string | null } }[];
+      createdAt: Date;
+      milestones: Array<{
+        id: string;
+        title: string;
+        description: string | null;
+        targetDate: Date;
+        isCompleted: boolean;
+        completedAt: Date | null;
+        order: number;
+      }>;
     };
   };
 }
@@ -48,10 +56,11 @@ export function ProgressPostCard({ post }: ProgressPostCardProps) {
 
       <CardContent className="space-y-3">
         {post.project.imageUrl && (
-          /* eslint-disable-next-line @next/next/no-img-element */
           <Image
             src={post.project.imageUrl}
             alt={post.project.title}
+            width={400}
+            height={192}
             className="w-full h-48 object-cover rounded-md border"
           />
         )}
@@ -66,10 +75,22 @@ export function ProgressPostCard({ post }: ProgressPostCardProps) {
           ))}
         </div>
 
-        <div className="flex items-center gap-2">
-          <span className="text-xs">Progress:</span>
-          <Progress value={post.project.progress} className="flex-1" />
-          <span className="text-xs">{post.project.progress}%</span>
+        {/* ✅ Updated Progress Bar - No progress prop needed */}
+        <div className="space-y-2">
+          <span className="text-xs font-medium text-muted-foreground">
+            Progress
+          </span>
+          <ProjectMilestoneProgressBar
+            milestones={post.project.milestones.map((m) => ({
+              title: m.title,
+              description: m.description,
+              targetDate: m.targetDate.toISOString().split("T")[0],
+              isCompleted: m.isCompleted,
+              completedAt: m.completedAt,
+              order: m.order,
+            }))}
+            creationDate={post.project.createdAt}
+          />
         </div>
 
         <Link

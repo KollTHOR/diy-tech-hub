@@ -18,8 +18,22 @@ export default async function HomePage() {
             id: true,
             title: true,
             imageUrl: true,
-            progress: true,
             tags: { include: { tag: true } },
+            createdAt: true,
+            milestones: {
+              select: {
+                id: true,
+                title: true,
+                description: true,
+                targetDate: true,
+                isCompleted: true,
+                completedAt: true,
+                order: true,
+                
+                // Add any other fields required in UI
+              },
+              orderBy: { order: "asc" }, // sort milestones by order ascending
+            },
           },
         },
         // Include comment count

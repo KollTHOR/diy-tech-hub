@@ -15,12 +15,11 @@ import {
 import { Upload, X } from "lucide-react";
 import Image from "next/image";
 
-interface FormData {
-  title: string;
-  description: string;
-  content: string;
-  imageUrl: string;
-}
+import type {
+  
+  FormData,
+  
+} from "@/types/project";
 
 interface BasicInfoTabProps {
   formData: FormData;

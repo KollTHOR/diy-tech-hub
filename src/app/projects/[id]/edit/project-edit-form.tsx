@@ -29,14 +29,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ProjectDeleteDialog } from "@/components/project-delete-dialog";
 import { MilestoneInput } from "@/components/milestone-input";
-
-interface Tag {
-  id: string;
-  name: string;
-  slug: string;
-  color: string | null;
-  createdAt: Date;
-}
+import { Tag } from "@/types/project";
 
 interface Milestone {
   id: string;

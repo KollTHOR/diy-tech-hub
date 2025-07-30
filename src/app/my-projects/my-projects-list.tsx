@@ -23,7 +23,6 @@ interface Project {
   status: string;
   progress: number;
   difficulty: string;
-  estimatedHours: number | null;
   isPublished: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -209,12 +208,6 @@ export default function MyProjectsList({ projects }: MyProjectsListProps) {
                     <MessageCircle className="h-3 w-3" />
                     {project._count.comments}
                   </div>
-                  {project.estimatedHours && (
-                    <div className="flex items-center gap-1">
-                      <Clock className="h-3 w-3" />
-                      {project.estimatedHours}h
-                    </div>
-                  )}
                 </div>
                 <div className="flex items-center gap-1">
                   <Calendar className="h-3 w-3" />

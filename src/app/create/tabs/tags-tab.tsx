@@ -13,14 +13,9 @@ import {
 import { Plus, X, Search } from "lucide-react";
 import { toast } from "sonner";
 
-interface Tag {
-  id: string;
-  name: string;
-  slug: string;
-  color: string | null;
-  createdAt: Date;
-  usageCount?: number; // backend can provide this for popularity
-}
+import type {
+  Tag
+} from "@/types/project";
 
 interface TagsTabProps {
   selectedTags: Tag[];

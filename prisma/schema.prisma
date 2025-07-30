@@ -70,7 +70,6 @@ model Project {
   content       String         @db.Text
   imageUrl      String?
   status        ProjectStatus  @default(PLANNING)
-  progress      Int            @default(0) // Auto-calculated from milestones
   difficulty    Difficulty
   isPublished   Boolean        @default(false)
   authorId      String

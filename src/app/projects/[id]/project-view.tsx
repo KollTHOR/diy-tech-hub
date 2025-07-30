@@ -27,6 +27,8 @@ import { ProgressPostForm } from "@/components/progress-post-form";
 import Image from "next/image";
 import { ProjectDeleteDialog } from "@/components/project-delete-dialog";
 import { useState } from "react";
+import { ProjectMilestoneProgressBar } from "@/components/project-milestone-progress-bar";
+import { Milestone } from "@prisma/client";
 
 interface ProjectViewProps {
   project: {
@@ -38,8 +40,6 @@ interface ProjectViewProps {
     status: string;
     progress: number;
     difficulty: string;
-    estimatedHours: number | null;
-    actualHours: number | null;
     isPublished: boolean;
     createdAt: Date;
     updatedAt: Date;
@@ -78,6 +78,7 @@ interface ProjectViewProps {
         image: string | null;
       };
     }>;
+    milestones: Milestone[];
     _count: {
       comments: number;
     };
@@ -87,6 +88,16 @@ interface ProjectViewProps {
 export default function ProjectView({ project }: ProjectViewProps) {
   const { data: session } = useSession();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+
+  console.log(project);
+
+  const milestonesForUI = project.milestones.map((m) => ({
+    ...m,
+    targetDate:
+      m.targetDate instanceof Date
+        ? m.targetDate.toISOString().slice(0, 10)
+        : m.targetDate,
+  }));
 
   return (
     <div className="container mx-auto py-8">
@@ -306,23 +317,12 @@ export default function ProjectView({ project }: ProjectViewProps) {
 
               {/* Progress */}
               <div className="space-y-2">
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Progress:</span>
-                  <span>{project.progress}%</span>
-                </div>
-                <Progress value={project.progress} />
+                <ProjectMilestoneProgressBar
+                  milestones={milestonesForUI}
+                  creationDate={project.createdAt}
+                  progress={project.progress}
+                />
               </div>
-
-              {/* Estimated Hours */}
-              {project.estimatedHours && (
-                <div className="flex items-center gap-2">
-                  <Clock className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm">
-                    <span className="text-muted-foreground">Estimated:</span>{" "}
-                    {project.estimatedHours}h
-                  </span>
-                </div>
-              )}
 
               {/* Tags */}
               {project.tags.length > 0 && (

@@ -109,12 +109,16 @@ src/app/settings/page.tsx
 src/app/settings/profile/page.tsx
 src/app/settings/profile/profile-form.tsx
 src/components/change-password-dialog.tsx
+src/components/icon-selector.tsx
 src/components/milestone-input.tsx
+src/components/milestone-item.tsx
+src/components/milestone-template-selector.tsx
 src/components/navbar.tsx
 src/components/progress-post-card.tsx
 src/components/progress-post-comments.tsx
 src/components/progress-post-form.tsx
 src/components/project-delete-dialog.tsx
+src/components/project-milestone-progress-bar.tsx
 src/components/project-milestones.tsx
 src/components/project-progress-posts.tsx
 src/components/providers.tsx
@@ -141,6 +145,7 @@ src/components/ui/sonner.tsx
 src/components/ui/switch.tsx
 src/components/ui/tabs.tsx
 src/components/ui/textarea.tsx
+src/components/ui/tooltip.tsx
 src/hooks/use-confirmation-dialog.ts
 src/hooks/use-project-form.ts
 src/lib/auth-utils.ts
@@ -150,6 +155,7 @@ src/lib/milestone-templates.ts
 src/lib/milestone-utils.ts
 src/lib/utils.ts
 src/types/next-auth.d.ts
+src/types/project.ts
 tsconfig.json
 
 ================================================================
@@ -157,175 +163,264 @@ Files
 ================================================================
 
 ================
-File: src/app/create/tabs/basic-info-tab.tsx
+File: src/components/icon-selector.tsx
+================
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
+import React from "react";
+import {
+  ClipboardList,
+  Brush,
+  Rocket,
+  Settings,
+  CheckCircle,
+  Search,
+  MessageCircle,
+  Eye,
+  Flag,
+  BarChart2,
+} from "lucide-react";
+⋮----
+interface IconOption {
+  name: string;
+  Icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+}
+⋮----
+export function renderMilestoneIcon(iconName?: string)
+⋮----
+export function getMilestoneIcon(milestone: {
+  icon?: string;
+  isFromTemplate?: boolean;
+  templateId?: string;
+  // templateIcon?: React.ComponentType; // optional if applicable
+  // For templates, you probably want a different logic (can connect here).
+}): React.ReactElement
+⋮----
+// templateIcon?: React.ComponentType; // optional if applicable
+// For templates, you probably want a different logic (can connect here).
+⋮----
+// If milestone is from a template, handle template icon rendering somewhere else
+// This function here focuses on custom milestones only
+⋮----
+interface IconSelectorProps {
+  selectedIconName?: string;
+  onSelectIcon: (name: string) => void;
+}
+
+================
+File: src/components/milestone-item.tsx
 ================
 /* eslint-disable @typescript-eslint/no-explicit-any */
-// src/app/create/tabs/basic-info-tab.tsx
-import { useState } from "react";
+⋮----
+import { useRef, useState, useEffect } from "react";
+import { useDrag, useDrop } from "react-dnd";
+import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Upload, X } from "lucide-react";
-import Image from "next/image";
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+} from "@/components/ui/popover";
+import {
+  GripVertical,
+  Trash2,
+  Calendar as CalendarIcon,
+  Sparkles,
+} from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
+import React from "react";
 ⋮----
-interface FormData {
+import {
+  IconSelector,
+  getMilestoneIcon,
+} from "./icon-selector";
+⋮----
+interface Milestone {
   title: string;
   description: string;
-  content: string;
-  imageUrl: string;
+  targetDate: string;
+  isCompleted: boolean;
+  isFromTemplate?: boolean;
+  templateId?: string;
+  icon?: string;
 }
 ⋮----
-interface BasicInfoTabProps {
-  formData: FormData;
-  onUpdate: (field: string, value: any) => void;
+interface MilestoneItemProps {
+  milestone: Milestone;
+  index: number;
+  onUpdate: (
+    index: number,
+    field: keyof Milestone,
+    value: string | boolean
+  ) => void;
+  onRemove: (index: number) => void;
+  onMove: (dragIndex: number, hoverIndex: number) => void;
+  canRemove: boolean;
+  totalMilestones: number;
 }
 ⋮----
-const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) =>
+interface DragItem {
+  index: number;
+  type: string;
+}
 ⋮----
-const removeImage = () =>
-⋮----
-{/* Title */}
+const handleDateSelect = (date: Date | undefined) =>
 ⋮----
 onChange=
 ⋮----
-{/* Description */}
-⋮----
-{/* Content */}
-⋮----
-{/* Image Upload */}
+className=
 
 ================
-File: src/app/create/tabs/milestones-tab.tsx
+File: src/components/milestone-template-selector.tsx
 ================
-// src/app/create/tabs/milestones-tab.tsx
+import { useState } from "react";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { MilestoneInput } from "@/components/milestone-input";
-⋮----
-interface Milestone {
-  title: string;
-  description: string;
-  targetDate: string;
-  isCompleted: boolean;
-}
-⋮----
-interface MilestonesTabProps {
-  milestones: Milestone[];
-  onUpdate: (milestones: Milestone[]) => void;
-}
-
-================
-File: src/app/create/tabs/settings-tab.tsx
-================
-/* eslint-disable @typescript-eslint/no-explicit-any */
-// src/app/create/tabs/settings-tab.tsx
-import { Label } from "@/components/ui/label";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-⋮----
-interface FormData {
-  difficulty: string;
-  status: string;
-  isPublished: boolean;
-}
-⋮----
-interface SettingsTabProps {
-  formData: FormData;
-  onUpdate: (field: string, value: any) => void;
-}
-⋮----
-{/* Difficulty */}
-⋮----
-{/* Status */}
-⋮----
-{/* Publishing Options */}
-⋮----
-onCheckedChange=
-⋮----
-Publish immediately (make it visible to everyone)
-
-================
-File: src/app/create/tabs/tags-tab.tsx
-================
-// src/app/create/tabs/tags-tab.tsx
-import { useState, useEffect } from "react";
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { ChevronDown, ChevronUp, Sparkles } from "lucide-react";
+import React from "react";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Plus, X } from "lucide-react";
-import { toast } from "sonner";
+  getMilestoneTemplatesByCategory,
+} from "@/lib/milestone-templates";
+import { MilestoneTemplate } from "@/types/project";
 ⋮----
-interface Tag {
+interface MilestoneTemplateSelectorProps {
+  onSelectTemplate: (template: MilestoneTemplate) => void;
+}
+⋮----
+const toggleCategory = (category: string) =>
+⋮----
+const handleSelectTemplate = (template: MilestoneTemplate) =>
+
+================
+File: src/components/project-milestone-progress-bar.tsx
+================
+import React, { useMemo } from "react";
+import { cn } from "@/lib/utils";
+import type { Milestone } from "@/types/project";
+import { calculateProgressFromMilestones } from "@/lib/milestone-utils";
+import {
+  ClipboardList,
+  Brush,
+  Rocket,
+  Settings,
+  CheckCircle,
+  Search,
+  MessageCircle,
+  Eye,
+  Flag,
+  BarChart2,
+  Target,
+} from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+⋮----
+function getMilestoneIcon(milestone: Milestone)
+⋮----
+interface ProjectMilestoneProgressBarProps {
+  milestones: Milestone[];
+  creationDate: string | Date;
+  className?: string;
+}
+⋮----
+{/* Base Line */}
+⋮----
+{/* Progress Fill */}
+⋮----
+{/* Milestones */}
+⋮----
+className=
+⋮----
+{/* Progress label */}
+
+================
+File: src/components/ui/tooltip.tsx
+================
+import { cn } from "@/lib/utils"
+⋮----
+function TooltipProvider({
+  delayDuration = 0,
+  ...props
+}: React.ComponentProps<typeof TooltipPrimitive.Provider>)
+⋮----
+function Tooltip({
+  ...props
+}: React.ComponentProps<typeof TooltipPrimitive.Root>)
+⋮----
+function TooltipTrigger({
+  ...props
+}: React.ComponentProps<typeof TooltipPrimitive.Trigger>)
+⋮----
+function TooltipContent({
+  className,
+  sideOffset = 0,
+  children,
+  ...props
+}: React.ComponentProps<typeof TooltipPrimitive.Content>)
+⋮----
+className=
+
+================
+File: src/types/project.ts
+================
+// src/types/project.ts
+⋮----
+import type { LucideIcon } from "lucide-react";
+⋮----
+// For main project creation/edit flows
+export interface Tag {
   id: string;
   name: string;
   slug: string;
   color: string | null;
   createdAt: Date;
+  usageCount?: number;
 }
 ⋮----
-interface TagsTabProps {
-  selectedTags: Tag[];
-  onUpdate: (tags: Tag[]) => void;
+export interface Milestone {
+  title: string;
+  description: string | null;
+  targetDate: string;
+  isCompleted: boolean;
+  isFromTemplate?: boolean;
+  templateId?: string;
+  icon?: string;
+  completedAt?: Date | null;
 }
 ⋮----
-const fetchTags = async () =>
+export interface MilestoneTemplate {
+  id: string;
+  name: string;
+  description: string;
+  suggestedDuration: number; // days from project start
+  category: "planning" | "development" | "testing" | "launch" | "review";
+  icon: LucideIcon;
+}
 ⋮----
-const addTag = (tag: Tag) =>
+suggestedDuration: number; // days from project start
 ⋮----
-const removeTag = (tagId: string) =>
-⋮----
-const createNewTag = async () =>
-⋮----
-{/* Selected Tags */}
-⋮----
-{/* Available Tags */}
-⋮----
-{/* Create New Tag */}
-⋮----
-onKeyPress=
-
-================
-File: src/hooks/use-project-form.ts
-================
-/* eslint-disable @typescript-eslint/no-explicit-any */
-// src/app/create/hooks/use-project-form.ts
-import { useState, useEffect } from "react";
-⋮----
-interface FormData {
+export interface FormData {
   title: string;
   description: string;
   content: string;
@@ -334,31 +429,6 @@ interface FormData {
   status: string;
   isPublished: boolean;
 }
-⋮----
-interface Milestone {
-  title: string;
-  description: string;
-  targetDate: string;
-  isCompleted: boolean;
-}
-⋮----
-interface Tag {
-  id: string;
-  name: string;
-  slug: string;
-  color: string | null;
-  createdAt: Date;
-}
-⋮----
-export function useProjectForm()
-⋮----
-// Update validation when data changes
-⋮----
-const updateFormData = (field: string, value: any) =>
-⋮----
-const updateMilestones = (newMilestones: Milestone[]) =>
-⋮----
-const updateSelectedTags = (newTags: Tag[]) =>
 
 ================
 File: .repomixignore
@@ -892,6 +962,172 @@ import ProjectForm from "./project-form";
 export default async function CreateProjectPage()
 
 ================
+File: src/app/create/tabs/basic-info-tab.tsx
+================
+/* eslint-disable @typescript-eslint/no-explicit-any */
+// src/app/create/tabs/basic-info-tab.tsx
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Upload, X } from "lucide-react";
+import Image from "next/image";
+⋮----
+import type {
+  
+  FormData,
+  
+} from "@/types/project";
+⋮----
+interface BasicInfoTabProps {
+  formData: FormData;
+  onUpdate: (field: string, value: any) => void;
+}
+⋮----
+const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) =>
+⋮----
+const removeImage = () =>
+⋮----
+{/* Title */}
+⋮----
+onChange=
+⋮----
+{/* Description */}
+⋮----
+{/* Content */}
+⋮----
+{/* Image Upload */}
+
+================
+File: src/app/create/tabs/milestones-tab.tsx
+================
+// src/app/create/tabs/milestones-tab.tsx
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { MilestoneInput } from "@/components/milestone-input";
+⋮----
+interface Milestone {
+  title: string;
+  description: string;
+  targetDate: string;
+  isCompleted: boolean;
+}
+⋮----
+interface MilestonesTabProps {
+  milestones: Milestone[];
+  onUpdate: (milestones: Milestone[]) => void;
+}
+
+================
+File: src/app/create/tabs/settings-tab.tsx
+================
+/* eslint-disable @typescript-eslint/no-explicit-any */
+// src/app/create/tabs/settings-tab.tsx
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+⋮----
+import type {FormData} from "@/types/project";
+⋮----
+interface SettingsTabProps {
+  formData: FormData;
+  onUpdate: (field: string, value: any) => void;
+}
+⋮----
+{/* Difficulty */}
+⋮----
+{/* Status */}
+⋮----
+{/* Publishing Options */}
+⋮----
+onCheckedChange=
+⋮----
+Publish immediately (make it visible to everyone)
+
+================
+File: src/app/create/tabs/tags-tab.tsx
+================
+import { useState, useEffect, useMemo } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Plus, X, Search } from "lucide-react";
+import { toast } from "sonner";
+⋮----
+import type {
+  Tag
+} from "@/types/project";
+⋮----
+interface TagsTabProps {
+  selectedTags: Tag[];
+  onUpdate: (tags: Tag[]) => void;
+}
+⋮----
+// Fetch all tags (should be sorted by popularity on backend)
+⋮----
+const fetchTags = async () =>
+⋮----
+// Optionally sort by usageCount if available
+⋮----
+// Filter tags by search input and exclude already-selected tags
+⋮----
+.slice(0, 10); // show up to 10
+⋮----
+// Add selected tag
+const addTag = (tag: Tag) =>
+⋮----
+// Remove selected tag
+const removeTag = (tagId: string) =>
+⋮----
+// Create a new tag
+const handleCreateTag = async () =>
+⋮----
+// Allow Enter in search to create new tag if not found
+const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) =>
+⋮----
+{/* Selected Tags */}
+⋮----
+{/* Popular Tags and Search */}
+⋮----
+{/* Suggest popular tags as user types */}
+⋮----
+{/* If no matches, show create option */}
+
+================
 File: src/app/login/error/login-error-content.tsx
 ================
 import { useSearchParams } from "next/navigation";
@@ -1142,135 +1378,16 @@ const handleClose = () =>
 onChange=
 
 ================
-File: src/components/milestone-input.tsx
-================
-import { useState, useCallback, useRef, useEffect } from "react";
-import { format } from "date-fns";
-import { DndProvider, useDrag, useDrop } from "react-dnd";
-import { HTML5Backend } from "react-dnd-html5-backend";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import {
-  Calendar as CalendarIcon,
-  Target,
-  Plus,
-  Trash2,
-  GripVertical,
-  Sparkles,
-  ChevronDown,
-  ChevronUp,
-} from "lucide-react";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import { cn } from "@/lib/utils";
-import {
-  MILESTONE_TEMPLATES,
-  getMilestoneTemplatesByCategory,
-  calculateSuggestedDate,
-  type MilestoneTemplate,
-} from "@/lib/milestone-templates";
-⋮----
-interface Milestone {
-  title: string;
-  description: string;
-  targetDate: string;
-  isCompleted: boolean;
-  isFromTemplate?: boolean;
-  templateId?: string;
-}
-⋮----
-interface MilestoneInputProps {
-  milestones: Milestone[];
-  onChange: (milestones: Milestone[]) => void;
-  minMilestones?: number;
-  maxMilestones?: number;
-}
-⋮----
-interface DragItem {
-  index: number;
-  type: string;
-}
-⋮----
-interface DraggableMilestoneProps {
-  milestone: Milestone;
-  index: number;
-  onUpdate: (
-    index: number,
-    field: keyof Milestone,
-    value: string | boolean
-  ) => void;
-  onRemove: (index: number) => void;
-  onMove: (dragIndex: number, hoverIndex: number) => void;
-  canRemove: boolean;
-  totalMilestones: number;
-}
-⋮----
-// Connect drag and drop to the main container
-⋮----
-// Connect drag to the handle and preview to the entire element
-⋮----
-// Convert string date to Date object for the calendar
-⋮----
-const handleDateSelect = (date: Date | undefined) =>
-⋮----
-// Convert Date to YYYY-MM-DD string format
-⋮----
-onChange=
-⋮----
-className=
-⋮----
-const toggleCategory = (category: string) =>
-⋮----
-const handleSelectTemplate = (template: MilestoneTemplate) =>
-⋮----
-const handleMilestoneChange = (
-    index: number,
-    field: keyof Milestone,
-    value: string | boolean
-) =>
-⋮----
-// Remove template flag if user modifies a template-based milestone
-⋮----
-const addMilestone = () =>
-⋮----
-targetDate: "", // ✅ Remove automatic date calculation - leave empty
-⋮----
-const addFromTemplate = (template: MilestoneTemplate) =>
-⋮----
-const removeMilestone = (index: number) =>
-
-================
 File: src/components/progress-post-card.tsx
 ================
+// src/components/progress-post-card.tsx
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import Image from "next/image";
 import { ProgressPostComments } from "./progress-post-comments";
+import { ProjectMilestoneProgressBar } from "./project-milestone-progress-bar";
 ⋮----
 interface ProgressPostCardProps {
   post: {
@@ -1283,13 +1400,22 @@ interface ProgressPostCardProps {
       id: string;
       title: string;
       imageUrl: string | null;
-      progress: number;
       tags: { tag: { id: string; name: string; color: string | null } }[];
+      createdAt: Date;
+      milestones: Array<{
+        id: string;
+        title: string;
+        description: string | null;
+        targetDate: Date;
+        isCompleted: boolean;
+        completedAt: Date | null;
+        order: number;
+      }>;
     };
   };
 }
 ⋮----
-/* eslint-disable-next-line @next/next/no-img-element */
+{/* ✅ Updated Progress Bar - No progress prop needed */}
 
 ================
 File: src/components/progress-post-comments.tsx
@@ -1538,16 +1664,8 @@ import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { getMilestoneStatus } from "@/lib/milestone-utils";
-⋮----
-interface Milestone {
-  id: string;
-  title: string;
-  description: string | null;
-  targetDate: Date;
-  isCompleted: boolean;
-  completedAt: Date | null;
-  order: number;
-}
+import { Milestone } from "@prisma/client";
+import { ProjectMilestoneProgressBar } from "@/components/project-milestone-progress-bar";
 ⋮----
 interface ProjectMilestonesProps {
   projectId: string;
@@ -2019,6 +2137,35 @@ const handleCancel = () =>
 // Store cancel handler for later use
 
 ================
+File: src/hooks/use-project-form.ts
+================
+/* eslint-disable @typescript-eslint/no-explicit-any */
+// src/app/create/hooks/use-project-form.ts
+import { Tag } from "@/types/project";
+import { useState, useEffect } from "react";
+⋮----
+interface Milestone {
+  title: string;
+  description: string;
+  targetDate: string;
+  isCompleted: boolean;
+}
+⋮----
+import type {
+  FormData,
+} from "@/types/project";
+⋮----
+export function useProjectForm()
+⋮----
+// Update validation when data changes
+⋮----
+const updateFormData = (field: string, value: any) =>
+⋮----
+const updateMilestones = (newMilestones: Milestone[]) =>
+⋮----
+const updateSelectedTags = (newTags: Tag[]) =>
+
+================
 File: src/lib/auth-utils.ts
 ================
 import { redirect } from "next/navigation";
@@ -2035,42 +2182,17 @@ File: src/lib/db.ts
 import { PrismaClient } from "@prisma/client";
 
 ================
-File: src/lib/milestone-templates.ts
-================
-export interface MilestoneTemplate {
-  id: string;
-  name: string;
-  description: string;
-  suggestedDuration: number; // days from project start
-  category: "planning" | "development" | "testing" | "launch" | "review";
-  icon: string;
-}
-⋮----
-suggestedDuration: number; // days from project start
-⋮----
-export function getMilestoneTemplatesByCategory()
-⋮----
-export function calculateSuggestedDate(
-  startDate: Date,
-  daysFromStart: number
-): string
-⋮----
-return date.toISOString().split("T")[0]; // Return YYYY-MM-DD format
-
-================
 File: src/lib/milestone-utils.ts
 ================
-interface Milestone {
-  id: string;
-  title: string;
+// src/lib/milestone-utils.ts
+interface MilestoneForCalculation {
   targetDate: Date;
   isCompleted: boolean;
-  completedAt: Date | null;
-  order: number;
+  completedAt?: Date | null;
 }
 ⋮----
 export function calculateProgressFromMilestones(
-  milestones: Milestone[]
+  milestones: MilestoneForCalculation[]
 ): number
 ⋮----
 // If all milestones are completed, return 100%
@@ -2086,11 +2208,9 @@ const completionWeight = totalMilestones > 0 ? 80 / totalMilestones : 0; // 80% 
 ⋮----
 // First milestone - assume project started 30 days before first milestone
 ⋮----
-export function getNextMilestone(milestones: Milestone[]): Milestone | null
-⋮----
-export function getMilestoneStatus(
-  milestone: Milestone
-): "completed" | "overdue" | "upcoming" | "current"
+export function getNextMilestone(
+  milestones: MilestoneForCalculation[]
+): MilestoneForCalculation | null
 
 ================
 File: src/lib/utils.ts
@@ -2201,80 +2321,24 @@ next-env.d.ts
 File: src/app/api/projects/route.ts
 ================
 /* eslint-disable @typescript-eslint/no-explicit-any */
+// src/app/api/projects/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { calculateProgressFromMilestones } from "@/lib/milestone-utils";
 ⋮----
 // POST - Create new project
 export async function POST(req: NextRequest)
 ⋮----
 // Validation
 ⋮----
-// FIXED: Remove tag requirement - tags are optional
-// if (!tags || tags.length === 0) {
-//   return NextResponse.json({ error: "At least one tag is required" }, { status: 400 });
-// }
-⋮----
 // Validate milestone dates are in order
 ⋮----
 // Create project with tags and milestones
 ⋮----
-progress: 0, // Will be calculated after milestones are created
-// Create tags relationship - handle empty tags array
+// ✅ Removed progress field
 ⋮----
-// Create milestones
-⋮----
-// Calculate and update progress based on milestones
-
-================
-File: src/app/create/project-form.tsx
-================
-/* eslint-disable @typescript-eslint/no-explicit-any */
-// src/app/create/project-form.tsx
-⋮----
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { Session } from "next-auth";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
-import { FileText, Tags, Target, Settings, X, ArrowLeft } from "lucide-react";
-import { toast } from "sonner";
-⋮----
-import { BasicInfoTab } from "./tabs/basic-info-tab";
-import { TagsTab } from "./tabs/tags-tab";
-import { MilestonesTab } from "./tabs/milestones-tab";
-import { SettingsTab } from "./tabs/settings-tab";
-import { useProjectForm } from "@/hooks/use-project-form";
-⋮----
-interface ProjectFormProps {
-  session: Session;
-}
-⋮----
-const handleCancel = () =>
-⋮----
-// Navigate back to the previous page or to my projects
-⋮----
-// Alternative: router.push('/my-projects') if you want a specific destination
-⋮----
-const handleSubmit = async () =>
-⋮----
-// Validate all tabs
-⋮----
-// Filter out empty milestones
-⋮----
-const canProceedToNextTab = (currentTab: string) =>
-⋮----
-const goToNextTab = () =>
-⋮----
-const goToPrevTab = () =>
-⋮----
-{/* Header with Cancel Button */}
-⋮----
-{/* Cancel Button - Top Right */}
-⋮----
-{/* Navigation Buttons */}
+// ✅ No longer need to calculate and update progress
 
 ================
 File: src/app/login/error/page.tsx
@@ -2358,7 +2422,6 @@ interface Project {
   status: string;
   progress: number;
   difficulty: string;
-  estimatedHours: number | null;
   isPublished: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -2413,185 +2476,6 @@ export default async function ProjectEditPage({
 // Fix: Await params before accessing its properties
 
 ================
-File: src/app/projects/[id]/edit/project-edit-form.tsx
-================
-/* eslint-disable @typescript-eslint/no-explicit-any */
-⋮----
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
-import { toast } from "sonner";
-import { X, Plus, Upload, ArrowLeft, Trash2 } from "lucide-react";
-import Link from "next/link";
-import Image from "next/image";
-import { ProjectDeleteDialog } from "@/components/project-delete-dialog";
-import { MilestoneInput } from "@/components/milestone-input";
-⋮----
-interface Tag {
-  id: string;
-  name: string;
-  slug: string;
-  color: string | null;
-  createdAt: Date;
-}
-⋮----
-interface Milestone {
-  id: string;
-  title: string;
-  description: string | null;
-  targetDate: Date;
-  isCompleted: boolean;
-  completedAt: Date | null;
-  order: number;
-}
-⋮----
-interface Project {
-  id: string;
-  title: string;
-  description: string | null;
-  content: string;
-  imageUrl: string | null;
-  status: string;
-  progress: number;
-  difficulty: string;
-  isPublished: boolean;
-  tags: Array<{
-    tag: Tag;
-  }>;
-  milestones: Milestone[]; // Add milestones to project interface
-}
-⋮----
-milestones: Milestone[]; // Add milestones to project interface
-⋮----
-interface ProjectEditFormProps {
-  project: Project;
-}
-⋮----
-interface MilestoneInputType {
-  title: string;
-  description: string;
-  targetDate: string;
-  isCompleted: boolean;
-}
-⋮----
-// Form state initialized with project data
-⋮----
-// Initialize milestones from project data
-⋮----
-targetDate: m.targetDate.toISOString().split("T")[0], // Convert to YYYY-MM-DD format
-⋮----
-// Fetch available tags
-⋮----
-const fetchTags = async () =>
-⋮----
-const handleInputChange = (field: string, value: any) =>
-⋮----
-const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) =>
-⋮----
-const addTag = (tag: Tag) =>
-⋮----
-const removeTag = (tagId: string) =>
-⋮----
-const createNewTag = async () =>
-⋮----
-const handleSubmit = async (e: React.FormEvent) =>
-⋮----
-// Milestone validation
-⋮----
-// Validate milestone dates are in chronological order
-⋮----
-milestones: milestones, // Add milestones to the request
-⋮----
-{/* Basic Information */}
-⋮----
-onChange=
-⋮----
-handleInputChange("description", e.target.value)
-⋮----
-{/* Image Upload */}
-⋮----
-accept="image/*"
-                  onChange={handleImageUpload}
-                  className="hidden"
-                  id="image-upload"
-                />
-                <Label htmlFor="image-upload" className="cursor-pointer">
-                  <div className="flex items-center gap-2 px-4 py-2 border border-border rounded-lg hover:bg-muted transition-colors">
-                    <Upload className="h-4 w-4" />
-                    {imagePreview ? "Change Image" : "Upload Image"}
-                  </div>
-                </Label>
-              </div>
-
-              {imagePreview && (
-                <div className="relative w-full max-w-md">
-                  <Image
-                    src={imagePreview}
-                    alt="Project preview"
-                    width={400}
-                    height={192}
-                    className="w-full h-48 object-cover rounded-lg border"
-                  />
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    size="sm"
-                    className="absolute top-2 right-2"
-                    onClick={() => {
-                      setImagePreview("");
-                      setFormData((prev) => ({ ...prev, imageUrl: "" }));
-                    }}
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Tags */}
-⋮----
-{/* Selected Tags */}
-⋮----
-{/* Available Tags */}
-⋮----
-{/* Create New Tag */}
-⋮----
-{/* Milestones - Replace the estimated/actual hours section */}
-⋮----
-{/* Project Settings */}
-⋮----
-{/* Publishing Options */}
-⋮----
-handleInputChange("isPublished", checked)
-⋮----
-<Label htmlFor="publish">Published (visible to everyone)</Label>
-⋮----
-{/* Submit Buttons */}
-⋮----
-{/* Delete Confirmation Dialog */}
-
-================
 File: src/app/projects/[id]/page.tsx
 ================
 import { notFound } from "next/navigation";
@@ -2606,9 +2490,9 @@ interface ProjectPageProps {
 ⋮----
 async function getProject(id: string)
 ⋮----
-// Add progress posts if you want them
+projectId: true, // <-- ADD THIS
 ⋮----
-// Fix the _count - remove it for now or use proper syntax
+createdAt: true, // <-- ADD THIS
 ⋮----
 export default async function ProjectPage(
 ⋮----
@@ -2644,6 +2528,8 @@ import { ProgressPostForm } from "@/components/progress-post-form";
 import Image from "next/image";
 import { ProjectDeleteDialog } from "@/components/project-delete-dialog";
 import { useState } from "react";
+import { ProjectMilestoneProgressBar } from "@/components/project-milestone-progress-bar";
+import { Milestone } from "@prisma/client";
 ⋮----
 interface ProjectViewProps {
   project: {
@@ -2655,8 +2541,6 @@ interface ProjectViewProps {
     status: string;
     progress: number;
     difficulty: string;
-    estimatedHours: number | null;
-    actualHours: number | null;
     isPublished: boolean;
     createdAt: Date;
     updatedAt: Date;
@@ -2695,6 +2579,7 @@ interface ProjectViewProps {
         image: string | null;
       };
     }>;
+    milestones: Milestone[];
     _count: {
       comments: number;
     };
@@ -2738,8 +2623,6 @@ interface ProjectViewProps {
 {/* Difficulty */}
 ⋮----
 {/* Progress */}
-⋮----
-{/* Estimated Hours */}
 ⋮----
 {/* Tags */}
 
@@ -2814,26 +2697,30 @@ import { cn } from "@/lib/utils";
 {/* Settings Content */}
 
 ================
-File: src/components/providers.tsx
+File: src/lib/milestone-templates.ts
 ================
-import { SessionProvider } from 'next-auth/react'
-import { ThemeProvider } from 'next-themes'
-import { ReactNode } from 'react'
+import { MilestoneTemplate } from "@/types/project";
+import {
+  ClipboardList,
+  Brush,
+  Rocket,
+  Settings,
+  CheckCircle,
+  Search,
+  MessageCircle,
+  Eye,
+  Flag,
+  BarChart2,
+} from "lucide-react";
 ⋮----
-interface ProvidersProps {
-  children: ReactNode
-}
+export function getMilestoneTemplatesByCategory()
 ⋮----
-export function Providers(
+export function calculateSuggestedDate(
+  startDate: Date,
+  daysFromStart: number
+): string
 ⋮----
-{/* <ThemeProvider
-        attribute="class"
-        defaultTheme="system"
-        enableSystem
-        disableTransitionOnChange
-      >
-        {children}
-      </ThemeProvider> */}
+return date.toISOString().split("T")[0]; // Return YYYY-MM-DD format
 
 ================
 File: prisma/schema.prisma
@@ -2910,7 +2797,6 @@ model Project {
   content       String         @db.Text
   imageUrl      String?
   status        ProjectStatus  @default(PLANNING)
-  progress      Int            @default(0) // Auto-calculated from milestones
   difficulty    Difficulty
   isPublished   Boolean        @default(false)
   authorId      String
@@ -3006,6 +2892,54 @@ model Comment {
   progressPost   ProgressPost? @relation(fields: [progressPostId], references: [id])
   createdAt      DateTime      @default(now())
 }
+
+================
+File: src/app/create/project-form.tsx
+================
+/* eslint-disable @typescript-eslint/no-explicit-any */
+// src/app/create/project-form.tsx
+⋮----
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Session } from "next-auth";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import { FileText, Tags, Target, Settings, X, ArrowLeft } from "lucide-react";
+import { toast } from "sonner";
+⋮----
+import { BasicInfoTab } from "./tabs/basic-info-tab";
+import { TagsTab } from "./tabs/tags-tab";
+import { MilestonesTab } from "./tabs/milestones-tab";
+import { SettingsTab } from "./tabs/settings-tab";
+import { useProjectForm } from "@/hooks/use-project-form";
+⋮----
+interface ProjectFormProps {
+  session: Session;
+}
+⋮----
+const handleCancel = () =>
+⋮----
+// Navigate back to the previous page or to my projects
+⋮----
+// Alternative: router.push('/my-projects') if you want a specific destination
+⋮----
+const handleSubmit = async () =>
+⋮----
+// Validate all tabs
+⋮----
+// Filter out empty milestones
+⋮----
+const canProceedToNextTab = (currentTab: string) =>
+⋮----
+const goToNextTab = () =>
+⋮----
+const goToPrevTab = () =>
+⋮----
+{/* Header with Cancel Button */}
+⋮----
+{/* Cancel Button - Top Right */}
+⋮----
+{/* Navigation Buttons */}
 
 ================
 File: src/app/globals.css
@@ -3239,6 +3173,213 @@ import { Providers } from "@/components/providers";
 import { Navbar } from "@/components/navbar";
 
 ================
+File: src/app/projects/[id]/edit/project-edit-form.tsx
+================
+/* eslint-disable @typescript-eslint/no-explicit-any */
+⋮----
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { toast } from "sonner";
+import { X, Plus, Upload, ArrowLeft, Trash2 } from "lucide-react";
+import Link from "next/link";
+import Image from "next/image";
+import { ProjectDeleteDialog } from "@/components/project-delete-dialog";
+import { MilestoneInput } from "@/components/milestone-input";
+import { Tag } from "@/types/project";
+⋮----
+interface Milestone {
+  id: string;
+  title: string;
+  description: string | null;
+  targetDate: Date;
+  isCompleted: boolean;
+  completedAt: Date | null;
+  order: number;
+}
+⋮----
+interface Project {
+  id: string;
+  title: string;
+  description: string | null;
+  content: string;
+  imageUrl: string | null;
+  status: string;
+  progress: number;
+  difficulty: string;
+  isPublished: boolean;
+  tags: Array<{
+    tag: Tag;
+  }>;
+  milestones: Milestone[]; // Add milestones to project interface
+}
+⋮----
+milestones: Milestone[]; // Add milestones to project interface
+⋮----
+interface ProjectEditFormProps {
+  project: Project;
+}
+⋮----
+interface MilestoneInputType {
+  title: string;
+  description: string;
+  targetDate: string;
+  isCompleted: boolean;
+}
+⋮----
+// Form state initialized with project data
+⋮----
+// Initialize milestones from project data
+⋮----
+targetDate: m.targetDate.toISOString().split("T")[0], // Convert to YYYY-MM-DD format
+⋮----
+// Fetch available tags
+⋮----
+const fetchTags = async () =>
+⋮----
+const handleInputChange = (field: string, value: any) =>
+⋮----
+const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) =>
+⋮----
+const addTag = (tag: Tag) =>
+⋮----
+const removeTag = (tagId: string) =>
+⋮----
+const createNewTag = async () =>
+⋮----
+const handleSubmit = async (e: React.FormEvent) =>
+⋮----
+// Validate milestone dates are in chronological order
+⋮----
+milestones: milestones, // Add milestones to the request
+⋮----
+{/* Basic Information */}
+⋮----
+onChange=
+⋮----
+handleInputChange("description", e.target.value)
+⋮----
+{/* Image Upload */}
+⋮----
+accept="image/*"
+                  onChange={handleImageUpload}
+                  className="hidden"
+                  id="image-upload"
+                />
+                <Label htmlFor="image-upload" className="cursor-pointer">
+                  <div className="flex items-center gap-2 px-4 py-2 border border-border rounded-lg hover:bg-muted transition-colors">
+                    <Upload className="h-4 w-4" />
+                    {imagePreview ? "Change Image" : "Upload Image"}
+                  </div>
+                </Label>
+              </div>
+
+              {imagePreview && (
+                <div className="relative w-full max-w-md">
+                  <Image
+                    src={imagePreview}
+                    alt="Project preview"
+                    width={400}
+                    height={192}
+                    className="w-full h-48 object-cover rounded-lg border"
+                  />
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="sm"
+                    className="absolute top-2 right-2"
+                    onClick={() => {
+                      setImagePreview("");
+                      setFormData((prev) => ({ ...prev, imageUrl: "" }));
+                    }}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Tags */}
+⋮----
+{/* Selected Tags */}
+⋮----
+{/* Available Tags */}
+⋮----
+{/* Create New Tag */}
+⋮----
+{/* Milestones - Replace the estimated/actual hours section */}
+⋮----
+{/* Project Settings */}
+⋮----
+{/* Publishing Options */}
+⋮----
+handleInputChange("isPublished", checked)
+⋮----
+<Label htmlFor="publish">Published (visible to everyone)</Label>
+⋮----
+{/* Submit Buttons */}
+⋮----
+{/* Delete Confirmation Dialog */}
+
+================
+File: src/components/milestone-input.tsx
+================
+import { DndProvider } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Target, Plus } from "lucide-react";
+import React from "react";
+import { MilestoneItem } from "./milestone-item";
+import { MilestoneTemplateSelector } from "./milestone-template-selector";
+import type { Milestone, MilestoneTemplate } from "@/types/project";
+⋮----
+interface MilestoneInputProps {
+  milestones: Milestone[];
+  onChange: (milestones: Milestone[]) => void;
+  minMilestones?: number;
+  maxMilestones?: number;
+}
+⋮----
+const addMilestone = () =>
+⋮----
+const addFromTemplate = (template: MilestoneTemplate) =>
+⋮----
+// icon comes from template.icon
+⋮----
+const removeMilestone = (index: number) =>
+⋮----
+const moveMilestone = (fromIndex: number, toIndex: number) =>
+⋮----
+const updateMilestone = (
+    index: number,
+    field: keyof Milestone,
+    value: string | boolean
+) =>
+
+================
 File: src/components/navbar.tsx
 ================
 import { useSession, signOut } from 'next-auth/react'
@@ -3253,6 +3394,21 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { ThemeToggle } from "@/components/theme-toggle";
+
+================
+File: src/components/providers.tsx
+================
+import { SessionProvider } from 'next-auth/react'
+import { ThemeProvider } from 'next-themes'
+import { ReactNode } from 'react'
+⋮----
+interface ProvidersProps {
+  children: ReactNode
+}
+⋮----
+export function Providers(
+⋮----
+{/* {children} */}
 
 ================
 File: src/lib/auth.ts
@@ -3320,6 +3476,7 @@ File: package.json
     "@radix-ui/react-slot": "^1.2.3",
     "@radix-ui/react-switch": "^1.2.5",
     "@radix-ui/react-tabs": "^1.1.12",
+    "@radix-ui/react-tooltip": "^1.2.7",
     "bcryptjs": "^3.0.2",
     "class-variance-authority": "^0.7.1",
     "cloudinary": "^2.7.0",
@@ -3366,6 +3523,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 export const revalidate = 60; // ISR every minute
 ⋮----
 /* --- Fetch --- */
+⋮----
+// Add any other fields required in UI
+⋮----
+orderBy: { order: "asc" }, // sort milestones by order ascending
 ⋮----
 // Include comment count
 ⋮----

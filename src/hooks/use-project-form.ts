@@ -1,16 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // src/app/create/hooks/use-project-form.ts
+import { Tag } from "@/types/project";
 import { useState, useEffect } from "react";
-
-interface FormData {
-  title: string;
-  description: string;
-  content: string;
-  imageUrl: string;
-  difficulty: string;
-  status: string;
-  isPublished: boolean;
-}
 
 interface Milestone {
   title: string;
@@ -19,15 +10,12 @@ interface Milestone {
   isCompleted: boolean;
 }
 
-interface Tag {
-  id: string;
-  name: string;
-  slug: string;
-  color: string | null;
-  createdAt: Date;
-}
+import type {
+  FormData,
+} from "@/types/project";
 
 export function useProjectForm() {
+
   const [formData, setFormData] = useState<FormData>({
     title: "",
     description: "",

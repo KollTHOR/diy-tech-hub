@@ -55,6 +55,7 @@ interface Milestone {
   isCompleted: boolean;
   isFromTemplate?: boolean;
   templateId?: string;
+  icon?: string;
 }
 
 interface MilestoneInputProps {
@@ -400,40 +401,27 @@ export function MilestoneInput({
   };
 
   const addMilestone = () => {
-    if (milestones.length < maxMilestones) {
-      const lastDate =
-        milestones.length > 0
-          ? new Date(milestones[milestones.length - 1].targetDate)
-          : new Date();
+    if (milestones.length >= maxMilestones) return;
 
-      lastDate.setDate(lastDate.getDate() + 30);
+    const newMilestone: Milestone = {
+      title: "",
+      description: "",
+      targetDate: "", // ✅ Remove automatic date calculation - leave empty
+      isCompleted: false,
+    };
 
-      onChange([
-        ...milestones,
-        {
-          title: "",
-          description: "",
-          targetDate: lastDate.toISOString().split("T")[0],
-          isCompleted: false,
-        },
-      ]);
-    }
+    onChange([...milestones, newMilestone]);
   };
 
   const addFromTemplate = (template: MilestoneTemplate) => {
     if (milestones.length < maxMilestones) {
-      const projectStartDate = new Date();
-      const suggestedDate = calculateSuggestedDate(
-        projectStartDate,
-        template.suggestedDuration
-      );
 
       onChange([
         ...milestones,
         {
           title: template.name,
           description: template.description,
-          targetDate: suggestedDate,
+          targetDate: "",
           isCompleted: false,
           isFromTemplate: true,
           templateId: template.id,

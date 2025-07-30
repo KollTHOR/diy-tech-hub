@@ -253,12 +253,6 @@ export default function ProjectEditForm({ project }: ProjectEditFormProps) {
       return;
     }
 
-    // Milestone validation
-    if (milestones.length !== 5) {
-      toast.error("Please add exactly 5 milestones");
-      return;
-    }
-
     const invalidMilestone = milestones.find(
       (m) => !m.title.trim() || !m.targetDate
     );

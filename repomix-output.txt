@@ -81,6 +81,10 @@ src/app/api/user/profile/route.ts
 src/app/api/user/unlink-account/route.ts
 src/app/create/page.tsx
 src/app/create/project-form.tsx
+src/app/create/tabs/basic-info-tab.tsx
+src/app/create/tabs/milestones-tab.tsx
+src/app/create/tabs/settings-tab.tsx
+src/app/create/tabs/tags-tab.tsx
 src/app/globals.css
 src/app/layout.tsx
 src/app/login/error/login-error-content.tsx
@@ -138,6 +142,7 @@ src/components/ui/switch.tsx
 src/components/ui/tabs.tsx
 src/components/ui/textarea.tsx
 src/hooks/use-confirmation-dialog.ts
+src/hooks/use-project-form.ts
 src/lib/auth-utils.ts
 src/lib/auth.ts
 src/lib/db.ts
@@ -152,12 +157,328 @@ Files
 ================================================================
 
 ================
+File: src/app/create/tabs/basic-info-tab.tsx
+================
+/* eslint-disable @typescript-eslint/no-explicit-any */
+// src/app/create/tabs/basic-info-tab.tsx
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Upload, X } from "lucide-react";
+import Image from "next/image";
+⋮----
+interface FormData {
+  title: string;
+  description: string;
+  content: string;
+  imageUrl: string;
+}
+⋮----
+interface BasicInfoTabProps {
+  formData: FormData;
+  onUpdate: (field: string, value: any) => void;
+}
+⋮----
+const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) =>
+⋮----
+const removeImage = () =>
+⋮----
+{/* Title */}
+⋮----
+onChange=
+⋮----
+{/* Description */}
+⋮----
+{/* Content */}
+⋮----
+{/* Image Upload */}
+
+================
+File: src/app/create/tabs/milestones-tab.tsx
+================
+// src/app/create/tabs/milestones-tab.tsx
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { MilestoneInput } from "@/components/milestone-input";
+⋮----
+interface Milestone {
+  title: string;
+  description: string;
+  targetDate: string;
+  isCompleted: boolean;
+}
+⋮----
+interface MilestonesTabProps {
+  milestones: Milestone[];
+  onUpdate: (milestones: Milestone[]) => void;
+}
+
+================
+File: src/app/create/tabs/settings-tab.tsx
+================
+/* eslint-disable @typescript-eslint/no-explicit-any */
+// src/app/create/tabs/settings-tab.tsx
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+⋮----
+interface FormData {
+  difficulty: string;
+  status: string;
+  isPublished: boolean;
+}
+⋮----
+interface SettingsTabProps {
+  formData: FormData;
+  onUpdate: (field: string, value: any) => void;
+}
+⋮----
+{/* Difficulty */}
+⋮----
+{/* Status */}
+⋮----
+{/* Publishing Options */}
+⋮----
+onCheckedChange=
+⋮----
+Publish immediately (make it visible to everyone)
+
+================
+File: src/app/create/tabs/tags-tab.tsx
+================
+// src/app/create/tabs/tags-tab.tsx
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Plus, X } from "lucide-react";
+import { toast } from "sonner";
+⋮----
+interface Tag {
+  id: string;
+  name: string;
+  slug: string;
+  color: string | null;
+  createdAt: Date;
+}
+⋮----
+interface TagsTabProps {
+  selectedTags: Tag[];
+  onUpdate: (tags: Tag[]) => void;
+}
+⋮----
+const fetchTags = async () =>
+⋮----
+const addTag = (tag: Tag) =>
+⋮----
+const removeTag = (tagId: string) =>
+⋮----
+const createNewTag = async () =>
+⋮----
+{/* Selected Tags */}
+⋮----
+{/* Available Tags */}
+⋮----
+{/* Create New Tag */}
+⋮----
+onKeyPress=
+
+================
+File: src/hooks/use-project-form.ts
+================
+/* eslint-disable @typescript-eslint/no-explicit-any */
+// src/app/create/hooks/use-project-form.ts
+import { useState, useEffect } from "react";
+⋮----
+interface FormData {
+  title: string;
+  description: string;
+  content: string;
+  imageUrl: string;
+  difficulty: string;
+  status: string;
+  isPublished: boolean;
+}
+⋮----
+interface Milestone {
+  title: string;
+  description: string;
+  targetDate: string;
+  isCompleted: boolean;
+}
+⋮----
+interface Tag {
+  id: string;
+  name: string;
+  slug: string;
+  color: string | null;
+  createdAt: Date;
+}
+⋮----
+export function useProjectForm()
+⋮----
+// Update validation when data changes
+⋮----
+const updateFormData = (field: string, value: any) =>
+⋮----
+const updateMilestones = (newMilestones: Milestone[]) =>
+⋮----
+const updateSelectedTags = (newTags: Tag[]) =>
+
+================
 File: .repomixignore
 ================
 # Add patterns to ignore here, one per line
 # Example:
 # *.log
 # tmp/
+
+================
+File: components.json
+================
+{
+  "$schema": "https://ui.shadcn.com/schema.json",
+  "style": "new-york",
+  "rsc": true,
+  "tsx": true,
+  "tailwind": {
+    "config": "",
+    "css": "src/app/globals.css",
+    "baseColor": "neutral",
+    "cssVariables": true,
+    "prefix": ""
+  },
+  "aliases": {
+    "components": "@/components",
+    "utils": "@/lib/utils",
+    "ui": "@/components/ui",
+    "lib": "@/lib",
+    "hooks": "@/hooks"
+  },
+  "iconLibrary": "lucide"
+}
+
+================
+File: eslint.config.mjs
+================
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+⋮----
+const compat = new FlatCompat({
+⋮----
+...compat.extends("next/core-web-vitals", "next/typescript"),
+
+================
+File: next.config.ts
+================
+import type { NextConfig } from "next";
+⋮----
+/* config options here */
+
+================
+File: postcss.config.mjs
+================
+
+
+================
+File: public/file.svg
+================
+<svg fill="none" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><path d="M14.5 13.5V5.41a1 1 0 0 0-.3-.7L9.8.29A1 1 0 0 0 9.08 0H1.5v13.5A2.5 2.5 0 0 0 4 16h8a2.5 2.5 0 0 0 2.5-2.5m-1.5 0v-7H8v-5H3v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1M9.5 5V2.12L12.38 5zM5.13 5h-.62v1.25h2.12V5zm-.62 3h7.12v1.25H4.5zm.62 3h-.62v1.25h7.12V11z" clip-rule="evenodd" fill="#666" fill-rule="evenodd"/></svg>
+
+================
+File: public/globe.svg
+================
+<svg fill="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><g clip-path="url(#a)"><path fill-rule="evenodd" clip-rule="evenodd" d="M10.27 14.1a6.5 6.5 0 0 0 3.67-3.45q-1.24.21-2.7.34-.31 1.83-.97 3.1M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m.48-1.52a7 7 0 0 1-.96 0H7.5a4 4 0 0 1-.84-1.32q-.38-.89-.63-2.08a40 40 0 0 0 3.92 0q-.25 1.2-.63 2.08a4 4 0 0 1-.84 1.31zm2.94-4.76q1.66-.15 2.95-.43a7 7 0 0 0 0-2.58q-1.3-.27-2.95-.43a18 18 0 0 1 0 3.44m-1.27-3.54a17 17 0 0 1 0 3.64 39 39 0 0 1-4.3 0 17 17 0 0 1 0-3.64 39 39 0 0 1 4.3 0m1.1-1.17q1.45.13 2.69.34a6.5 6.5 0 0 0-3.67-3.44q.65 1.26.98 3.1M8.48 1.5l.01.02q.41.37.84 1.31.38.89.63 2.08a40 40 0 0 0-3.92 0q.25-1.2.63-2.08a4 4 0 0 1 .85-1.32 7 7 0 0 1 .96 0m-2.75.4a6.5 6.5 0 0 0-3.67 3.44 29 29 0 0 1 2.7-.34q.31-1.83.97-3.1M4.58 6.28q-1.66.16-2.95.43a7 7 0 0 0 0 2.58q1.3.27 2.95.43a18 18 0 0 1 0-3.44m.17 4.71q-1.45-.12-2.69-.34a6.5 6.5 0 0 0 3.67 3.44q-.65-1.27-.98-3.1" fill="#666"/></g><defs><clipPath id="a"><path fill="#fff" d="M0 0h16v16H0z"/></clipPath></defs></svg>
+
+================
+File: public/next.svg
+================
+<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 394 80"><path fill="#000" d="M262 0h68.5v12.7h-27.2v66.6h-13.6V12.7H262V0ZM149 0v12.7H94v20.4h44.3v12.6H94v21h55v12.6H80.5V0h68.7zm34.3 0h-17.8l63.8 79.4h17.9l-32-39.7 32-39.6h-17.9l-23 28.6-23-28.6zm18.3 56.7-9-11-27.1 33.7h17.8l18.3-22.7z"/><path fill="#000" d="M81 79.3 17 0H0v79.3h13.6V17l50.2 62.3H81Zm252.6-.4c-1 0-1.8-.4-2.5-1s-1.1-1.6-1.1-2.6.3-1.8 1-2.5 1.6-1 2.6-1 1.8.3 2.5 1a3.4 3.4 0 0 1 .6 4.3 3.7 3.7 0 0 1-3 1.8zm23.2-33.5h6v23.3c0 2.1-.4 4-1.3 5.5a9.1 9.1 0 0 1-3.8 3.5c-1.6.8-3.5 1.3-5.7 1.3-2 0-3.7-.4-5.3-1s-2.8-1.8-3.7-3.2c-.9-1.3-1.4-3-1.4-5h6c.1.8.3 1.6.7 2.2s1 1.2 1.6 1.5c.7.4 1.5.5 2.4.5 1 0 1.8-.2 2.4-.6a4 4 0 0 0 1.6-1.8c.3-.8.5-1.8.5-3V45.5zm30.9 9.1a4.4 4.4 0 0 0-2-3.3 7.5 7.5 0 0 0-4.3-1.1c-1.3 0-2.4.2-3.3.5-.9.4-1.6 1-2 1.6a3.5 3.5 0 0 0-.3 4c.3.5.7.9 1.3 1.2l1.8 1 2 .5 3.2.8c1.3.3 2.5.7 3.7 1.2a13 13 0 0 1 3.2 1.8 8.1 8.1 0 0 1 3 6.5c0 2-.5 3.7-1.5 5.1a10 10 0 0 1-4.4 3.5c-1.8.8-4.1 1.2-6.8 1.2-2.6 0-4.9-.4-6.8-1.2-2-.8-3.4-2-4.5-3.5a10 10 0 0 1-1.7-5.6h6a5 5 0 0 0 3.5 4.6c1 .4 2.2.6 3.4.6 1.3 0 2.5-.2 3.5-.6 1-.4 1.8-1 2.4-1.7a4 4 0 0 0 .8-2.4c0-.9-.2-1.6-.7-2.2a11 11 0 0 0-2.1-1.4l-3.2-1-3.8-1c-2.8-.7-5-1.7-6.6-3.2a7.2 7.2 0 0 1-2.4-5.7 8 8 0 0 1 1.7-5 10 10 0 0 1 4.3-3.5c2-.8 4-1.2 6.4-1.2 2.3 0 4.4.4 6.2 1.2 1.8.8 3.2 2 4.3 3.4 1 1.4 1.5 3 1.5 5h-5.8z"/></svg>
+
+================
+File: public/vercel.svg
+================
+<svg fill="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1155 1000"><path d="m577.3 0 577.4 1000H0z" fill="#fff"/></svg>
+
+================
+File: public/window.svg
+================
+<svg fill="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path fill-rule="evenodd" clip-rule="evenodd" d="M1.5 2.5h13v10a1 1 0 0 1-1 1h-11a1 1 0 0 1-1-1zM0 1h16v11.5a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 0 12.5zm3.75 4.5a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5M7 4.75a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0m1.75.75a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5" fill="#666"/></svg>
+
+================
+File: README.md
+================
+This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+
+## Getting Started
+
+First, run the development server:
+
+```bash
+npm run dev
+# or
+yarn dev
+# or
+pnpm dev
+# or
+bun dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
+You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+
+This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+
+## Learn More
+
+To learn more about Next.js, take a look at the following resources:
+
+- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
+- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+
+You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+
+## Deploy on Vercel
+
+The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+
+Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
 
 ================
 File: repomix.config.json
@@ -200,6 +521,134 @@ File: repomix.config.json
     "encoding": "o200k_base"
   }
 }
+
+================
+File: src/app/add-password/add-password-form.tsx
+================
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
+import { Session } from "next-auth";
+⋮----
+interface UserAuthMethods {
+  hasPassword: boolean;
+  oauthProviders: string[];
+  email: string;
+}
+⋮----
+interface AddPasswordFormProps {
+  session: Session
+}
+⋮----
+const email = session.user.email; // Get email from session prop
+⋮----
+}, []); // Remove email dependency since it's now from props
+⋮----
+const fetchUserAuthMethods = async () =>
+⋮----
+// If user already has a password, redirect to login
+⋮----
+const handleSubmit = async (e: React.FormEvent) =>
+⋮----
+// Automatically sign them in with the new password
+⋮----
+const handleOAuthSignIn = async (provider: string) =>
+⋮----
+{/* Rest of your component remains the same */}
+
+================
+File: src/app/add-password/page.tsx
+================
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { redirect } from "next/navigation";
+import AddPasswordForm from "./add-password-form";
+⋮----
+export default async function AddPasswordPage()
+⋮----
+// Only redirect if NOT authenticated - we need them to be logged in
+
+================
+File: src/app/api/add-password/route.ts
+================
+import { NextRequest, NextResponse } from "next/server";
+import bcrypt from "bcryptjs";
+import { prisma } from "@/lib/db";
+⋮----
+export async function POST(req: NextRequest)
+⋮----
+// Find the user
+⋮----
+// Check if user already has a password
+⋮----
+// Verify user has at least one OAuth account (security check)
+⋮----
+// Hash the new password
+⋮----
+// Update the user with the new password
+
+================
+File: src/app/api/auth/[...nextauth]/route.ts
+================
+import NextAuth from "next-auth";
+import { authOptions } from "@/lib/auth";
+
+================
+File: src/app/api/change-password/route.ts
+================
+import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import bcrypt from "bcryptjs";
+import { prisma } from "@/lib/db";
+⋮----
+export async function POST(req: NextRequest)
+⋮----
+// Find the user
+⋮----
+// Check if user has a password (not OAuth-only)
+⋮----
+// Verify current password
+⋮----
+// Check if new password is different from current
+⋮----
+// Hash new password
+⋮----
+// Update password in database
+
+================
+File: src/app/api/check-user-auth-methods/route.ts
+================
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/db";
+⋮----
+export async function POST(req: NextRequest)
+
+================
+File: src/app/api/link-account/route.ts
+================
+import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/db";
+⋮----
+export async function POST(req: NextRequest)
+⋮----
+// Link the OAuth account to the existing user
 
 ================
 File: src/app/api/progress-posts/[id]/comments/route.ts
@@ -342,6 +791,107 @@ export async function DELETE(
 // Delete project (this will cascade delete related records)
 
 ================
+File: src/app/api/register/route.ts
+================
+import { NextRequest, NextResponse } from "next/server";
+import bcrypt from "bcryptjs";
+import { prisma } from "@/lib/db";
+⋮----
+export async function POST(req: NextRequest)
+⋮----
+// Check if user already exists
+⋮----
+// Hash password
+⋮----
+// Create user
+
+================
+File: src/app/api/tags/route.ts
+================
+import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/db";
+⋮----
+// GET - Fetch all tags
+export async function GET()
+⋮----
+// POST - Create new tag
+export async function POST(req: NextRequest)
+⋮----
+// Check if tag already exists
+⋮----
+// Create new tag
+⋮----
+function generateRandomColor(): string
+
+================
+File: src/app/api/user/linked-accounts/route.ts
+================
+import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/db";
+⋮----
+export async function GET()
+
+================
+File: src/app/api/user/profile/route.ts
+================
+import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { prisma } from "@/lib/db";
+⋮----
+// GET - Fetch user profile
+export async function GET()
+⋮----
+// ✅ Remove 'include' and use only 'select'
+⋮----
+// PUT - Update user profile
+export async function PUT(req: NextRequest)
+⋮----
+// Validation
+⋮----
+// URL validation for website
+⋮----
+// Update user profile
+⋮----
+// ✅ Remove 'include' and use only 'select'
+
+================
+File: src/app/api/user/unlink-account/route.ts
+================
+import { NextRequest, NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
+import { prisma } from '@/lib/db'
+⋮----
+export async function POST(req: NextRequest)
+⋮----
+// Get user with all accounts
+⋮----
+// Check if this is the account they're currently signed in with
+⋮----
+// Count remaining auth methods after unlinking
+⋮----
+// Prevent unlinking the only authentication method
+⋮----
+// Remove the account
+⋮----
+// If they're unlinking their current session provider, invalidate all sessions
+⋮----
+// Delete all user sessions to force re-authentication
+
+================
+File: src/app/create/page.tsx
+================
+import { requireAuth } from "@/lib/auth-utils";
+import ProjectForm from "./project-form";
+⋮----
+export default async function CreateProjectPage()
+
+================
 File: src/app/login/error/login-error-content.tsx
 ================
 import { useSearchParams } from "next/navigation";
@@ -387,6 +937,209 @@ const handleExistingOAuthSignIn = async (provider: string) =>
 {/* Show existing OAuth providers */}
 ⋮----
 {/* Password reset option (only if user has password) */}
+
+================
+File: src/app/login/page.tsx
+================
+import { redirectIfAuthenticated } from "@/lib/auth-utils";
+import LoginForm from "./login-form";
+⋮----
+export default async function LoginPage()
+
+================
+File: src/app/my-projects/page.tsx
+================
+import { requireAuth } from "@/lib/auth-utils";
+import { prisma } from "@/lib/db";
+import MyProjectsList from "./my-projects-list";
+⋮----
+async function getUserProjects(userId: string)
+⋮----
+export default async function MyProjectsPage()
+
+================
+File: src/app/projects/[id]/edit/not-found.tsx
+================
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+⋮----
+export default function EditProjectNotFound()
+
+================
+File: src/app/projects/[id]/not-found.tsx
+================
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+⋮----
+export default function ProjectNotFound()
+
+================
+File: src/app/register/page.tsx
+================
+import { redirectIfAuthenticated } from "@/lib/auth-utils";
+import RegisterForm from "./register-form";
+⋮----
+export default async function RegisterPage()
+
+================
+File: src/app/register/register-form.tsx
+================
+import { useState } from "react";
+import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { toast } from "sonner";
+⋮----
+export default function RegisterForm()
+⋮----
+const handleCredentialsSubmit = async (e: React.FormEvent) =>
+⋮----
+const handleSocialLogin = async (provider: string) =>
+⋮----
+{/* Social Login Buttons */}
+⋮----
+{/* Email Registration Form */}
+⋮----
+onChange=
+
+================
+File: src/app/settings/accounts/page.tsx
+================
+import { requireAuth } from "@/lib/auth-utils";
+import AccountsSettings from "./accounts-settings";
+⋮----
+export default async function AccountsPage()
+⋮----
+// Ensure user is authenticated before showing the page
+
+================
+File: src/app/settings/page.tsx
+================
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+⋮----
+export default function SettingsPage()
+⋮----
+// Redirect to profile settings by default
+
+================
+File: src/app/settings/profile/page.tsx
+================
+import { requireAuth } from "@/lib/auth-utils";
+import ProfileForm from "./profile-form";
+⋮----
+export default async function SettingsProfilePage()
+
+================
+File: src/app/settings/profile/profile-form.tsx
+================
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { Session } from "next-auth";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
+⋮----
+interface ProfileFormProps {
+  session: Session;
+}
+⋮----
+interface UserProfile {
+  name: string;
+  email: string;
+  bio?: string;
+  website?: string;
+  location?: string;
+  hasPassword: boolean;
+  oauthProviders: string[];
+  createdAt: string;
+}
+⋮----
+// Form state
+⋮----
+// Fetch user profile on component mount
+⋮----
+const fetchProfile = async () =>
+⋮----
+// Set form fields
+⋮----
+const handleSubmit = async (e: React.FormEvent) =>
+⋮----
+{/* Account Info Card */}
+⋮----
+{/* Profile Form */}
+
+================
+File: src/components/change-password-dialog.tsx
+================
+import { useState } from "react";
+import { useSession, signOut } from "next-auth/react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { toast } from "sonner";
+⋮----
+interface ChangePasswordDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+⋮----
+export function ChangePasswordDialog({
+  open,
+  onOpenChange,
+}: ChangePasswordDialogProps)
+⋮----
+const resetForm = () =>
+⋮----
+const handleSubmit = async (e: React.FormEvent) =>
+⋮----
+const handleClose = () =>
+⋮----
+onChange=
 
 ================
 File: src/components/milestone-input.tsx
@@ -501,6 +1254,8 @@ const handleMilestoneChange = (
 // Remove template flag if user modifies a template-based milestone
 ⋮----
 const addMilestone = () =>
+⋮----
+targetDate: "", // ✅ Remove automatic date calculation - leave empty
 ⋮----
 const addFromTemplate = (template: MilestoneTemplate) =>
 ⋮----
@@ -849,6 +1604,53 @@ interface ProjectProgressPostsProps {
 }
 
 ================
+File: src/components/theme-toggle.tsx
+================
+import { Moon, Sun } from "lucide-react";
+import { useState, useEffect } from "react";
+import { cn } from "@/lib/utils";
+⋮----
+// Check for saved theme preference or default to 'light'
+⋮----
+const toggleTheme = () =>
+⋮----
+// Prevent hydration mismatch
+
+================
+File: src/components/ui/alert.tsx
+================
+import { cva, type VariantProps } from "class-variance-authority"
+⋮----
+import { cn } from "@/lib/utils"
+⋮----
+className=
+
+================
+File: src/components/ui/avatar.tsx
+================
+import { cn } from "@/lib/utils"
+⋮----
+className=
+
+================
+File: src/components/ui/badge.tsx
+================
+import { Slot } from "@radix-ui/react-slot"
+import { cva, type VariantProps } from "class-variance-authority"
+⋮----
+import { cn } from "@/lib/utils"
+⋮----
+className=
+
+================
+File: src/components/ui/button.tsx
+================
+import { Slot } from "@radix-ui/react-slot"
+import { cva, type VariantProps } from "class-variance-authority"
+⋮----
+import { cn } from "@/lib/utils"
+
+================
 File: src/components/ui/calendar.tsx
 ================
 import {
@@ -871,6 +1673,11 @@ function CalendarDayButton({
 }: React.ComponentProps<typeof DayButton>)
 ⋮----
 data-day=
+
+================
+File: src/components/ui/card.tsx
+================
+import { cn } from "@/lib/utils"
 
 ================
 File: src/components/ui/checkbox.tsx
@@ -902,6 +1709,188 @@ function CollapsibleContent({
 }: React.ComponentProps<typeof CollapsiblePrimitive.CollapsibleContent>)
 
 ================
+File: src/components/ui/confirmation-dialog.tsx
+================
+import { useState } from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+⋮----
+interface ConfirmationDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  title: string;
+  description: string;
+  confirmText?: string;
+  cancelText?: string;
+  variant?: "default" | "destructive";
+  onConfirm: () => void;
+}
+⋮----
+export function ConfirmationDialog({
+  open,
+  onOpenChange,
+  title,
+  description,
+  confirmText = "Confirm",
+  cancelText = "Cancel",
+  variant = "default",
+  onConfirm,
+}: ConfirmationDialogProps)
+⋮----
+const handleConfirm = () =>
+
+================
+File: src/components/ui/dialog.tsx
+================
+import { XIcon } from "lucide-react"
+⋮----
+import { cn } from "@/lib/utils"
+⋮----
+function Dialog({
+  ...props
+}: React.ComponentProps<typeof DialogPrimitive.Root>)
+⋮----
+function DialogTrigger({
+  ...props
+}: React.ComponentProps<typeof DialogPrimitive.Trigger>)
+⋮----
+function DialogPortal({
+  ...props
+}: React.ComponentProps<typeof DialogPrimitive.Portal>)
+⋮----
+function DialogClose({
+  ...props
+}: React.ComponentProps<typeof DialogPrimitive.Close>)
+
+================
+File: src/components/ui/dropdown-menu.tsx
+================
+import { CheckIcon, ChevronRightIcon, CircleIcon } from "lucide-react"
+⋮----
+import { cn } from "@/lib/utils"
+⋮----
+function DropdownMenu({
+  ...props
+}: React.ComponentProps<typeof DropdownMenuPrimitive.Root>)
+⋮----
+function DropdownMenuPortal({
+  ...props
+}: React.ComponentProps<typeof DropdownMenuPrimitive.Portal>)
+⋮----
+function DropdownMenuTrigger({
+  ...props
+}: React.ComponentProps<typeof DropdownMenuPrimitive.Trigger>)
+⋮----
+function DropdownMenuGroup({
+  ...props
+}: React.ComponentProps<typeof DropdownMenuPrimitive.Group>)
+⋮----
+function DropdownMenuCheckboxItem({
+  className,
+  children,
+  checked,
+  ...props
+}: React.ComponentProps<typeof DropdownMenuPrimitive.CheckboxItem>)
+⋮----
+className=
+⋮----
+function DropdownMenuRadioGroup({
+  ...props
+}: React.ComponentProps<typeof DropdownMenuPrimitive.RadioGroup>)
+⋮----
+function DropdownMenuRadioItem({
+  className,
+  children,
+  ...props
+}: React.ComponentProps<typeof DropdownMenuPrimitive.RadioItem>)
+⋮----
+function DropdownMenuSub({
+  ...props
+}: React.ComponentProps<typeof DropdownMenuPrimitive.Sub>)
+⋮----
+function DropdownMenuSubTrigger({
+  className,
+  inset,
+  children,
+  ...props
+}: React.ComponentProps<typeof DropdownMenuPrimitive.SubTrigger> & {
+  inset?: boolean
+})
+
+================
+File: src/components/ui/form.tsx
+================
+import { Slot } from "@radix-ui/react-slot"
+import {
+  Controller,
+  FormProvider,
+  useFormContext,
+  useFormState,
+  type ControllerProps,
+  type FieldPath,
+  type FieldValues,
+} from "react-hook-form"
+⋮----
+import { cn } from "@/lib/utils"
+import { Label } from "@/components/ui/label"
+⋮----
+type FormFieldContextValue<
+  TFieldValues extends FieldValues = FieldValues,
+  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
+> = {
+  name: TName
+}
+⋮----
+const FormField = <
+  TFieldValues extends FieldValues = FieldValues,
+  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
+>({
+  ...props
+}: ControllerProps<TFieldValues, TName>) =>
+⋮----
+const useFormField = () =>
+⋮----
+type FormItemContextValue = {
+  id: string
+}
+⋮----
+function FormItem(
+⋮----
+className=
+⋮----
+function FormLabel({
+  className,
+  ...props
+}: React.ComponentProps<typeof LabelPrimitive.Root>)
+⋮----
+function FormControl(
+⋮----
+function FormMessage(
+
+================
+File: src/components/ui/input.tsx
+================
+import { cn } from "@/lib/utils"
+⋮----
+function Input(
+⋮----
+className=
+
+================
+File: src/components/ui/label.tsx
+================
+import { cn } from "@/lib/utils"
+⋮----
+className=
+
+================
 File: src/components/ui/popover.tsx
 ================
 import { cn } from "@/lib/utils"
@@ -917,6 +1906,133 @@ function PopoverTrigger({
 function PopoverAnchor({
   ...props
 }: React.ComponentProps<typeof PopoverPrimitive.Anchor>)
+
+================
+File: src/components/ui/progress.tsx
+================
+import { cn } from "@/lib/utils"
+⋮----
+className=
+
+================
+File: src/components/ui/select.tsx
+================
+import { CheckIcon, ChevronDownIcon, ChevronUpIcon } from "lucide-react"
+⋮----
+import { cn } from "@/lib/utils"
+⋮----
+function Select({
+  ...props
+}: React.ComponentProps<typeof SelectPrimitive.Root>)
+⋮----
+function SelectGroup({
+  ...props
+}: React.ComponentProps<typeof SelectPrimitive.Group>)
+⋮----
+function SelectValue({
+  ...props
+}: React.ComponentProps<typeof SelectPrimitive.Value>)
+⋮----
+function SelectTrigger({
+  className,
+  size = "default",
+  children,
+  ...props
+}: React.ComponentProps<typeof SelectPrimitive.Trigger> & {
+  size?: "sm" | "default"
+})
+⋮----
+className=
+⋮----
+function SelectItem({
+  className,
+  children,
+  ...props
+}: React.ComponentProps<typeof SelectPrimitive.Item>)
+⋮----
+function SelectScrollUpButton({
+  className,
+  ...props
+}: React.ComponentProps<typeof SelectPrimitive.ScrollUpButton>)
+⋮----
+function SelectScrollDownButton({
+  className,
+  ...props
+}: React.ComponentProps<typeof SelectPrimitive.ScrollDownButton>)
+
+================
+File: src/components/ui/slider.tsx
+================
+import { cn } from "@/lib/utils"
+⋮----
+className=
+
+================
+File: src/components/ui/sonner.tsx
+================
+import { useTheme } from "next-themes"
+import { Toaster as Sonner, ToasterProps } from "sonner"
+⋮----
+const Toaster = (
+
+================
+File: src/components/ui/switch.tsx
+================
+import { cn } from "@/lib/utils"
+⋮----
+className=
+
+================
+File: src/components/ui/tabs.tsx
+================
+import { cn } from "@/lib/utils"
+⋮----
+className=
+
+================
+File: src/components/ui/textarea.tsx
+================
+import { cn } from "@/lib/utils"
+⋮----
+className=
+
+================
+File: src/hooks/use-confirmation-dialog.ts
+================
+import { useState } from "react";
+⋮----
+interface UseConfirmationDialogProps {
+  title: string;
+  description: string;
+  confirmText?: string;
+  cancelText?: string;
+  variant?: "default" | "destructive";
+}
+⋮----
+export function useConfirmationDialog()
+⋮----
+const confirm = (props: UseConfirmationDialogProps): Promise<boolean> =>
+⋮----
+// Handle cancel/close
+const handleCancel = () =>
+⋮----
+// Store cancel handler for later use
+
+================
+File: src/lib/auth-utils.ts
+================
+import { redirect } from "next/navigation";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+⋮----
+export async function requireAuth()
+⋮----
+export async function redirectIfAuthenticated()
+
+================
+File: src/lib/db.ts
+================
+import { PrismaClient } from "@prisma/client";
 
 ================
 File: src/lib/milestone-templates.ts
@@ -977,244 +2093,109 @@ export function getMilestoneStatus(
 ): "completed" | "overdue" | "upcoming" | "current"
 
 ================
-File: components.json
+File: src/lib/utils.ts
+================
+import { clsx, type ClassValue } from "clsx"
+import { twMerge } from "tailwind-merge"
+⋮----
+export function cn(...inputs: ClassValue[])
+
+================
+File: src/types/next-auth.d.ts
+================
+import { DefaultSession } from "next-auth";
+⋮----
+interface Session {
+    user: {
+      id: string;
+    } & DefaultSession["user"];
+  }
+⋮----
+interface User {
+    id: string;
+  }
+⋮----
+interface JWT {
+    id: string;
+  }
+
+================
+File: tsconfig.json
 ================
 {
-  "$schema": "https://ui.shadcn.com/schema.json",
-  "style": "new-york",
-  "rsc": true,
-  "tsx": true,
-  "tailwind": {
-    "config": "",
-    "css": "src/app/globals.css",
-    "baseColor": "neutral",
-    "cssVariables": true,
-    "prefix": ""
+  "compilerOptions": {
+    "target": "ES2017",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@/*": ["./src/*"]
+    }
   },
-  "aliases": {
-    "components": "@/components",
-    "utils": "@/lib/utils",
-    "ui": "@/components/ui",
-    "lib": "@/lib",
-    "hooks": "@/hooks"
-  },
-  "iconLibrary": "lucide"
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "exclude": ["node_modules"]
 }
 
 ================
-File: eslint.config.mjs
+File: .gitignore
 ================
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-⋮----
-const compat = new FlatCompat({
-⋮----
-...compat.extends("next/core-web-vitals", "next/typescript"),
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-================
-File: next.config.ts
-================
-import type { NextConfig } from "next";
-⋮----
-/* config options here */
+# dependencies
+/node_modules
+/.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
 
-================
-File: postcss.config.mjs
-================
+# testing
+/coverage
 
+# next.js
+/.next/
+/out/
 
-================
-File: public/file.svg
-================
-<svg fill="none" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg"><path d="M14.5 13.5V5.41a1 1 0 0 0-.3-.7L9.8.29A1 1 0 0 0 9.08 0H1.5v13.5A2.5 2.5 0 0 0 4 16h8a2.5 2.5 0 0 0 2.5-2.5m-1.5 0v-7H8v-5H3v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1M9.5 5V2.12L12.38 5zM5.13 5h-.62v1.25h2.12V5zm-.62 3h7.12v1.25H4.5zm.62 3h-.62v1.25h7.12V11z" clip-rule="evenodd" fill="#666" fill-rule="evenodd"/></svg>
+# production
+/build
 
-================
-File: public/globe.svg
-================
-<svg fill="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><g clip-path="url(#a)"><path fill-rule="evenodd" clip-rule="evenodd" d="M10.27 14.1a6.5 6.5 0 0 0 3.67-3.45q-1.24.21-2.7.34-.31 1.83-.97 3.1M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16m.48-1.52a7 7 0 0 1-.96 0H7.5a4 4 0 0 1-.84-1.32q-.38-.89-.63-2.08a40 40 0 0 0 3.92 0q-.25 1.2-.63 2.08a4 4 0 0 1-.84 1.31zm2.94-4.76q1.66-.15 2.95-.43a7 7 0 0 0 0-2.58q-1.3-.27-2.95-.43a18 18 0 0 1 0 3.44m-1.27-3.54a17 17 0 0 1 0 3.64 39 39 0 0 1-4.3 0 17 17 0 0 1 0-3.64 39 39 0 0 1 4.3 0m1.1-1.17q1.45.13 2.69.34a6.5 6.5 0 0 0-3.67-3.44q.65 1.26.98 3.1M8.48 1.5l.01.02q.41.37.84 1.31.38.89.63 2.08a40 40 0 0 0-3.92 0q.25-1.2.63-2.08a4 4 0 0 1 .85-1.32 7 7 0 0 1 .96 0m-2.75.4a6.5 6.5 0 0 0-3.67 3.44 29 29 0 0 1 2.7-.34q.31-1.83.97-3.1M4.58 6.28q-1.66.16-2.95.43a7 7 0 0 0 0 2.58q1.3.27 2.95.43a18 18 0 0 1 0-3.44m.17 4.71q-1.45-.12-2.69-.34a6.5 6.5 0 0 0 3.67 3.44q-.65-1.27-.98-3.1" fill="#666"/></g><defs><clipPath id="a"><path fill="#fff" d="M0 0h16v16H0z"/></clipPath></defs></svg>
+# misc
+.DS_Store
+*.pem
 
-================
-File: public/next.svg
-================
-<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 394 80"><path fill="#000" d="M262 0h68.5v12.7h-27.2v66.6h-13.6V12.7H262V0ZM149 0v12.7H94v20.4h44.3v12.6H94v21h55v12.6H80.5V0h68.7zm34.3 0h-17.8l63.8 79.4h17.9l-32-39.7 32-39.6h-17.9l-23 28.6-23-28.6zm18.3 56.7-9-11-27.1 33.7h17.8l18.3-22.7z"/><path fill="#000" d="M81 79.3 17 0H0v79.3h13.6V17l50.2 62.3H81Zm252.6-.4c-1 0-1.8-.4-2.5-1s-1.1-1.6-1.1-2.6.3-1.8 1-2.5 1.6-1 2.6-1 1.8.3 2.5 1a3.4 3.4 0 0 1 .6 4.3 3.7 3.7 0 0 1-3 1.8zm23.2-33.5h6v23.3c0 2.1-.4 4-1.3 5.5a9.1 9.1 0 0 1-3.8 3.5c-1.6.8-3.5 1.3-5.7 1.3-2 0-3.7-.4-5.3-1s-2.8-1.8-3.7-3.2c-.9-1.3-1.4-3-1.4-5h6c.1.8.3 1.6.7 2.2s1 1.2 1.6 1.5c.7.4 1.5.5 2.4.5 1 0 1.8-.2 2.4-.6a4 4 0 0 0 1.6-1.8c.3-.8.5-1.8.5-3V45.5zm30.9 9.1a4.4 4.4 0 0 0-2-3.3 7.5 7.5 0 0 0-4.3-1.1c-1.3 0-2.4.2-3.3.5-.9.4-1.6 1-2 1.6a3.5 3.5 0 0 0-.3 4c.3.5.7.9 1.3 1.2l1.8 1 2 .5 3.2.8c1.3.3 2.5.7 3.7 1.2a13 13 0 0 1 3.2 1.8 8.1 8.1 0 0 1 3 6.5c0 2-.5 3.7-1.5 5.1a10 10 0 0 1-4.4 3.5c-1.8.8-4.1 1.2-6.8 1.2-2.6 0-4.9-.4-6.8-1.2-2-.8-3.4-2-4.5-3.5a10 10 0 0 1-1.7-5.6h6a5 5 0 0 0 3.5 4.6c1 .4 2.2.6 3.4.6 1.3 0 2.5-.2 3.5-.6 1-.4 1.8-1 2.4-1.7a4 4 0 0 0 .8-2.4c0-.9-.2-1.6-.7-2.2a11 11 0 0 0-2.1-1.4l-3.2-1-3.8-1c-2.8-.7-5-1.7-6.6-3.2a7.2 7.2 0 0 1-2.4-5.7 8 8 0 0 1 1.7-5 10 10 0 0 1 4.3-3.5c2-.8 4-1.2 6.4-1.2 2.3 0 4.4.4 6.2 1.2 1.8.8 3.2 2 4.3 3.4 1 1.4 1.5 3 1.5 5h-5.8z"/></svg>
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
 
-================
-File: public/vercel.svg
-================
-<svg fill="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1155 1000"><path d="m577.3 0 577.4 1000H0z" fill="#fff"/></svg>
+# env files (can opt-in for committing if needed)
+.env*
 
-================
-File: public/window.svg
-================
-<svg fill="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path fill-rule="evenodd" clip-rule="evenodd" d="M1.5 2.5h13v10a1 1 0 0 1-1 1h-11a1 1 0 0 1-1-1zM0 1h16v11.5a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 0 12.5zm3.75 4.5a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5M7 4.75a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0m1.75.75a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5" fill="#666"/></svg>
+# vercel
+.vercel
 
-================
-File: README.md
-================
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# typescript
+*.tsbuildinfo
+next-env.d.ts
 
-## Getting Started
-
-First, run the development server:
-
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-
-================
-File: src/app/add-password/add-password-form.tsx
-================
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { signIn } from "next-auth/react";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
-import { toast } from "sonner";
-import { Session } from "next-auth";
-⋮----
-interface UserAuthMethods {
-  hasPassword: boolean;
-  oauthProviders: string[];
-  email: string;
-}
-⋮----
-interface AddPasswordFormProps {
-  session: Session
-}
-⋮----
-const email = session.user.email; // Get email from session prop
-⋮----
-}, []); // Remove email dependency since it's now from props
-⋮----
-const fetchUserAuthMethods = async () =>
-⋮----
-// If user already has a password, redirect to login
-⋮----
-const handleSubmit = async (e: React.FormEvent) =>
-⋮----
-// Automatically sign them in with the new password
-⋮----
-const handleOAuthSignIn = async (provider: string) =>
-⋮----
-{/* Rest of your component remains the same */}
-
-================
-File: src/app/add-password/page.tsx
-================
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import { redirect } from "next/navigation";
-import AddPasswordForm from "./add-password-form";
-⋮----
-export default async function AddPasswordPage()
-⋮----
-// Only redirect if NOT authenticated - we need them to be logged in
-
-================
-File: src/app/api/add-password/route.ts
-================
-import { NextRequest, NextResponse } from "next/server";
-import bcrypt from "bcryptjs";
-import { prisma } from "@/lib/db";
-⋮----
-export async function POST(req: NextRequest)
-⋮----
-// Find the user
-⋮----
-// Check if user already has a password
-⋮----
-// Verify user has at least one OAuth account (security check)
-⋮----
-// Hash the new password
-⋮----
-// Update the user with the new password
-
-================
-File: src/app/api/auth/[...nextauth]/route.ts
-================
-import NextAuth from "next-auth";
-import { authOptions } from "@/lib/auth";
-
-================
-File: src/app/api/change-password/route.ts
-================
-import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import bcrypt from "bcryptjs";
-import { prisma } from "@/lib/db";
-⋮----
-export async function POST(req: NextRequest)
-⋮----
-// Find the user
-⋮----
-// Check if user has a password (not OAuth-only)
-⋮----
-// Verify current password
-⋮----
-// Check if new password is different from current
-⋮----
-// Hash new password
-⋮----
-// Update password in database
-
-================
-File: src/app/api/check-user-auth-methods/route.ts
-================
-import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
-⋮----
-export async function POST(req: NextRequest)
-
-================
-File: src/app/api/link-account/route.ts
-================
-import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import { prisma } from "@/lib/db";
-⋮----
-export async function POST(req: NextRequest)
-⋮----
-// Link the OAuth account to the existing user
+/src/generated/prisma
 
 ================
 File: src/app/api/projects/route.ts
@@ -1229,264 +2210,71 @@ import { calculateProgressFromMilestones } from "@/lib/milestone-utils";
 // POST - Create new project
 export async function POST(req: NextRequest)
 ⋮----
-milestones, // Add milestones array
-⋮----
 // Validation
+⋮----
+// FIXED: Remove tag requirement - tags are optional
+// if (!tags || tags.length === 0) {
+//   return NextResponse.json({ error: "At least one tag is required" }, { status: 400 });
+// }
 ⋮----
 // Validate milestone dates are in order
 ⋮----
 // Create project with tags and milestones
 ⋮----
 progress: 0, // Will be calculated after milestones are created
+// Create tags relationship - handle empty tags array
+⋮----
+// Create milestones
 ⋮----
 // Calculate and update progress based on milestones
-
-================
-File: src/app/api/register/route.ts
-================
-import { NextRequest, NextResponse } from "next/server";
-import bcrypt from "bcryptjs";
-import { prisma } from "@/lib/db";
-⋮----
-export async function POST(req: NextRequest)
-⋮----
-// Check if user already exists
-⋮----
-// Hash password
-⋮----
-// Create user
-
-================
-File: src/app/api/tags/route.ts
-================
-import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import { prisma } from "@/lib/db";
-⋮----
-// GET - Fetch all tags
-export async function GET()
-⋮----
-// POST - Create new tag
-export async function POST(req: NextRequest)
-⋮----
-// Check if tag already exists
-⋮----
-// Create new tag
-⋮----
-function generateRandomColor(): string
-
-================
-File: src/app/api/user/linked-accounts/route.ts
-================
-import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import { prisma } from "@/lib/db";
-⋮----
-export async function GET()
-
-================
-File: src/app/api/user/profile/route.ts
-================
-import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-import { prisma } from "@/lib/db";
-⋮----
-// GET - Fetch user profile
-export async function GET()
-⋮----
-// ✅ Remove 'include' and use only 'select'
-⋮----
-// PUT - Update user profile
-export async function PUT(req: NextRequest)
-⋮----
-// Validation
-⋮----
-// URL validation for website
-⋮----
-// Update user profile
-⋮----
-// ✅ Remove 'include' and use only 'select'
-
-================
-File: src/app/api/user/unlink-account/route.ts
-================
-import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
-import { prisma } from '@/lib/db'
-⋮----
-export async function POST(req: NextRequest)
-⋮----
-// Get user with all accounts
-⋮----
-// Check if this is the account they're currently signed in with
-⋮----
-// Count remaining auth methods after unlinking
-⋮----
-// Prevent unlinking the only authentication method
-⋮----
-// Remove the account
-⋮----
-// If they're unlinking their current session provider, invalidate all sessions
-⋮----
-// Delete all user sessions to force re-authentication
-
-================
-File: src/app/create/page.tsx
-================
-import { requireAuth } from "@/lib/auth-utils";
-import ProjectForm from "./project-form";
-⋮----
-export default async function CreateProjectPage()
 
 ================
 File: src/app/create/project-form.tsx
 ================
 /* eslint-disable @typescript-eslint/no-explicit-any */
+// src/app/create/project-form.tsx
 ⋮----
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Session } from "next-auth";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Switch } from "@/components/ui/switch";
+import { FileText, Tags, Target, Settings, X, ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
-import { X, Plus, Upload } from "lucide-react";
-import Image from "next/image";
-import { MilestoneInput } from "@/components/milestone-input";
+⋮----
+import { BasicInfoTab } from "./tabs/basic-info-tab";
+import { TagsTab } from "./tabs/tags-tab";
+import { MilestonesTab } from "./tabs/milestones-tab";
+import { SettingsTab } from "./tabs/settings-tab";
+import { useProjectForm } from "@/hooks/use-project-form";
 ⋮----
 interface ProjectFormProps {
   session: Session;
 }
 ⋮----
-interface Tag {
-  id: string;
-  name: string;
-  slug: string;
-  color: string | null;
-  createdAt: Date;
-}
+const handleCancel = () =>
 ⋮----
-interface Milestone {
-  title: string;
-  description: string;
-  targetDate: string;
-  isCompleted: boolean;
-}
+// Navigate back to the previous page or to my projects
 ⋮----
-// Form state
+// Alternative: router.push('/my-projects') if you want a specific destination
 ⋮----
-// Milestone state - initialize with one empty milestone
+const handleSubmit = async () =>
 ⋮----
-// Fetch available tags
+// Validate all tabs
 ⋮----
-const fetchTags = async () =>
+// Filter out empty milestones
 ⋮----
-const handleInputChange = (field: string, value: any) =>
+const canProceedToNextTab = (currentTab: string) =>
 ⋮----
-const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) =>
+const goToNextTab = () =>
 ⋮----
-const addTag = (tag: Tag) =>
+const goToPrevTab = () =>
 ⋮----
-const removeTag = (tagId: string) =>
+{/* Header with Cancel Button */}
 ⋮----
-const createNewTag = async () =>
+{/* Cancel Button - Top Right */}
 ⋮----
-const handleSubmit = async (e: React.FormEvent) =>
-⋮----
-// Milestone validation
-⋮----
-// Validate milestone dates are in chronological order
-⋮----
-milestones: milestones, // Add milestones to the request
-⋮----
-{/* Basic Information */}
-⋮----
-onChange=
-⋮----
-handleInputChange("description", e.target.value)
-⋮----
-{/* Image Upload */}
-⋮----
-accept="image/*"
-                  onChange={handleImageUpload}
-                  className="hidden"
-                  id="image-upload"
-                />
-                <Label htmlFor="image-upload" className="cursor-pointer">
-                  <div className="flex items-center gap-2 px-4 py-2 border border-border rounded-lg hover:bg-muted transition-colors">
-                    <Upload className="h-4 w-4" />
-                    Upload Image
-                  </div>
-                </Label>
-              </div>
-
-              {imagePreview && (
-                <div className="relative w-full max-w-md">
-                  <Image
-                    src={imagePreview}
-                    alt="Project preview"
-                    width={400}
-                    height={192}
-                    className="w-full h-48 object-cover rounded-lg border"
-                  />
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    size="sm"
-                    className="absolute top-2 right-2"
-                    onClick={() => {
-                      setImagePreview("");
-                      setFormData((prev) => ({ ...prev, imageUrl: "" }));
-                    }}
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Tags */}
-⋮----
-{/* Selected Tags */}
-⋮----
-{/* Available Tags */}
-⋮----
-{/* Create New Tag */}
-⋮----
-{/* Milestones - Replace the Project Details section */}
-⋮----
-{/* Project Settings */}
-⋮----
-{/* Publishing Options */}
-⋮----
-handleInputChange("isPublished", checked)
-⋮----
-Publish immediately (make it visible to everyone)
-⋮----
-{/* Submit Buttons */}
+{/* Navigation Buttons */}
 
 ================
 File: src/app/login/error/page.tsx
@@ -1497,12 +2285,52 @@ import LoginErrorContent from "./login-error-content"; // Move your current comp
 export default function LoginErrorPage()
 
 ================
-File: src/app/login/page.tsx
+File: src/app/login/login-form.tsx
 ================
-import { redirectIfAuthenticated } from "@/lib/auth-utils";
-import LoginForm from "./login-form";
+import { useState } from "react";
+import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
 ⋮----
-export default async function LoginPage()
+interface OAuthOnlyError {
+  type: string;
+  email: string;
+  providers: string[];
+}
+⋮----
+const handleCredentialsSubmit = async (e: React.FormEvent) =>
+⋮----
+// Not a JSON error, handle as normal
+⋮----
+window.location.href = "/"; // Use window.location instead of router
+⋮----
+const handleSocialLogin = async (
+    provider: string,
+    redirectToSettings = false
+) =>
+⋮----
+const clearOAuthError = () =>
+⋮----
+{/* Enhanced OAuth-only Account Error */}
+⋮----
+{/* Only show social login and email form if no OAuth-only error */}
+⋮----
+{/* Social Login Buttons */}
+⋮----
+{/* Email/Password Form */}
 
 ================
 File: src/app/my-projects/my-projects-list.tsx
@@ -1557,32 +2385,6 @@ interface MyProjectsListProps {
 {/* Meta Information */}
 ⋮----
 {/* Actions */}
-
-================
-File: src/app/my-projects/page.tsx
-================
-import { requireAuth } from "@/lib/auth-utils";
-import { prisma } from "@/lib/db";
-import MyProjectsList from "./my-projects-list";
-⋮----
-async function getUserProjects(userId: string)
-⋮----
-export default async function MyProjectsPage()
-
-================
-File: src/app/projects/[id]/edit/not-found.tsx
-================
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-⋮----
-export default function EditProjectNotFound()
 
 ================
 File: src/app/projects/[id]/edit/page.tsx
@@ -1790,21 +2592,6 @@ handleInputChange("isPublished", checked)
 {/* Delete Confirmation Dialog */}
 
 ================
-File: src/app/projects/[id]/not-found.tsx
-================
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-⋮----
-export default function ProjectNotFound()
-
-================
 File: src/app/projects/[id]/page.tsx
 ================
 import { notFound } from "next/navigation";
@@ -1957,23 +2744,13 @@ interface ProjectViewProps {
 {/* Tags */}
 
 ================
-File: src/app/register/page.tsx
+File: src/app/settings/accounts/accounts-settings.tsx
 ================
-import { redirectIfAuthenticated } from "@/lib/auth-utils";
-import RegisterForm from "./register-form";
-⋮----
-export default async function RegisterPage()
-
-================
-File: src/app/register/register-form.tsx
-================
-import { useState } from "react";
+import { useSession, signOut } from "next-auth/react";
+import { useState, useEffect } from "react";
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Card,
   CardContent,
@@ -1981,600 +2758,82 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { toast } from "sonner";
-⋮----
-export default function RegisterForm()
-⋮----
-const handleCredentialsSubmit = async (e: React.FormEvent) =>
-⋮----
-const handleSocialLogin = async (provider: string) =>
-⋮----
-{/* Social Login Buttons */}
-⋮----
-{/* Email Registration Form */}
-⋮----
-onChange=
-
-================
-File: src/app/settings/accounts/page.tsx
-================
-import { requireAuth } from "@/lib/auth-utils";
-import AccountsSettings from "./accounts-settings";
-⋮----
-export default async function AccountsPage()
-⋮----
-// Ensure user is authenticated before showing the page
-
-================
-File: src/app/settings/page.tsx
-================
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
-⋮----
-export default function SettingsPage()
-⋮----
-// Redirect to profile settings by default
-
-================
-File: src/app/settings/profile/page.tsx
-================
-import { requireAuth } from "@/lib/auth-utils";
-import ProfileForm from "./profile-form";
-⋮----
-export default async function SettingsProfilePage()
-
-================
-File: src/app/settings/profile/profile-form.tsx
-================
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { Session } from "next-auth";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
+import { ChangePasswordDialog } from "@/components/change-password-dialog";
+import { useConfirmationDialog } from "@/hooks/use-confirmation-dialog";
 import { toast } from "sonner";
 ⋮----
-interface ProfileFormProps {
-  session: Session;
+interface LinkedAccount {
+  provider: string;
+  email?: string;
+  linkedAt: string;
 }
 ⋮----
-interface UserProfile {
-  name: string;
-  email: string;
-  bio?: string;
-  website?: string;
-  location?: string;
+interface UserAuthMethods {
   hasPassword: boolean;
   oauthProviders: string[];
-  createdAt: string;
+  email: string;
 }
 ⋮----
-// Form state
+// Handle welcome message from OAuth-only error flow
 ⋮----
-// Fetch user profile on component mount
+const fetchLinkedAccounts = async () =>
 ⋮----
-const fetchProfile = async () =>
+const fetchUserAuthMethods = async () =>
 ⋮----
-// Set form fields
+const linkAccount = async (provider: string) =>
 ⋮----
-const handleSubmit = async (e: React.FormEvent) =>
+const unlinkAccount = async (provider: string) =>
 ⋮----
-{/* Account Info Card */}
+const isLinked = (provider: string)
 ⋮----
-{/* Profile Form */}
+{/* Google Account */}
+⋮----
+{/* GitHub Account */}
+⋮----
+{/* Password Management Section */}
+⋮----
+{/* Add Password - Only show if user doesn't have a password */}
+⋮----
+{/* Change Password - Only show if user has a password */}
+⋮----
+{/* Render dialogs */}
 
 ================
-File: src/components/change-password-dialog.tsx
+File: src/app/settings/layout.tsx
 ================
-import { useState } from "react";
-import { useSession, signOut } from "next-auth/react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { toast } from "sonner";
-⋮----
-interface ChangePasswordDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-}
-⋮----
-export function ChangePasswordDialog({
-  open,
-  onOpenChange,
-}: ChangePasswordDialogProps)
-⋮----
-const resetForm = () =>
-⋮----
-const handleSubmit = async (e: React.FormEvent) =>
-⋮----
-const handleClose = () =>
-⋮----
-onChange=
-
-================
-File: src/components/theme-toggle.tsx
-================
-import { Moon, Sun } from "lucide-react";
-import { useState, useEffect } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 ⋮----
-// Check for saved theme preference or default to 'light'
+{/* Settings Navigation */}
 ⋮----
-const toggleTheme = () =>
-⋮----
-// Prevent hydration mismatch
+{/* Settings Content */}
 
 ================
-File: src/components/ui/alert.tsx
+File: src/components/providers.tsx
 ================
-import { cva, type VariantProps } from "class-variance-authority"
+import { SessionProvider } from 'next-auth/react'
+import { ThemeProvider } from 'next-themes'
+import { ReactNode } from 'react'
 ⋮----
-import { cn } from "@/lib/utils"
-⋮----
-className=
-
-================
-File: src/components/ui/avatar.tsx
-================
-import { cn } from "@/lib/utils"
-⋮----
-className=
-
-================
-File: src/components/ui/badge.tsx
-================
-import { Slot } from "@radix-ui/react-slot"
-import { cva, type VariantProps } from "class-variance-authority"
-⋮----
-import { cn } from "@/lib/utils"
-⋮----
-className=
-
-================
-File: src/components/ui/button.tsx
-================
-import { Slot } from "@radix-ui/react-slot"
-import { cva, type VariantProps } from "class-variance-authority"
-⋮----
-import { cn } from "@/lib/utils"
-
-================
-File: src/components/ui/card.tsx
-================
-import { cn } from "@/lib/utils"
-
-================
-File: src/components/ui/confirmation-dialog.tsx
-================
-import { useState } from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-⋮----
-interface ConfirmationDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  title: string;
-  description: string;
-  confirmText?: string;
-  cancelText?: string;
-  variant?: "default" | "destructive";
-  onConfirm: () => void;
+interface ProvidersProps {
+  children: ReactNode
 }
 ⋮----
-export function ConfirmationDialog({
-  open,
-  onOpenChange,
-  title,
-  description,
-  confirmText = "Confirm",
-  cancelText = "Cancel",
-  variant = "default",
-  onConfirm,
-}: ConfirmationDialogProps)
+export function Providers(
 ⋮----
-const handleConfirm = () =>
-
-================
-File: src/components/ui/dialog.tsx
-================
-import { XIcon } from "lucide-react"
-⋮----
-import { cn } from "@/lib/utils"
-⋮----
-function Dialog({
-  ...props
-}: React.ComponentProps<typeof DialogPrimitive.Root>)
-⋮----
-function DialogTrigger({
-  ...props
-}: React.ComponentProps<typeof DialogPrimitive.Trigger>)
-⋮----
-function DialogPortal({
-  ...props
-}: React.ComponentProps<typeof DialogPrimitive.Portal>)
-⋮----
-function DialogClose({
-  ...props
-}: React.ComponentProps<typeof DialogPrimitive.Close>)
-
-================
-File: src/components/ui/dropdown-menu.tsx
-================
-import { CheckIcon, ChevronRightIcon, CircleIcon } from "lucide-react"
-⋮----
-import { cn } from "@/lib/utils"
-⋮----
-function DropdownMenu({
-  ...props
-}: React.ComponentProps<typeof DropdownMenuPrimitive.Root>)
-⋮----
-function DropdownMenuPortal({
-  ...props
-}: React.ComponentProps<typeof DropdownMenuPrimitive.Portal>)
-⋮----
-function DropdownMenuTrigger({
-  ...props
-}: React.ComponentProps<typeof DropdownMenuPrimitive.Trigger>)
-⋮----
-function DropdownMenuGroup({
-  ...props
-}: React.ComponentProps<typeof DropdownMenuPrimitive.Group>)
-⋮----
-function DropdownMenuCheckboxItem({
-  className,
-  children,
-  checked,
-  ...props
-}: React.ComponentProps<typeof DropdownMenuPrimitive.CheckboxItem>)
-⋮----
-className=
-⋮----
-function DropdownMenuRadioGroup({
-  ...props
-}: React.ComponentProps<typeof DropdownMenuPrimitive.RadioGroup>)
-⋮----
-function DropdownMenuRadioItem({
-  className,
-  children,
-  ...props
-}: React.ComponentProps<typeof DropdownMenuPrimitive.RadioItem>)
-⋮----
-function DropdownMenuSub({
-  ...props
-}: React.ComponentProps<typeof DropdownMenuPrimitive.Sub>)
-⋮----
-function DropdownMenuSubTrigger({
-  className,
-  inset,
-  children,
-  ...props
-}: React.ComponentProps<typeof DropdownMenuPrimitive.SubTrigger> & {
-  inset?: boolean
-})
-
-================
-File: src/components/ui/form.tsx
-================
-import { Slot } from "@radix-ui/react-slot"
-import {
-  Controller,
-  FormProvider,
-  useFormContext,
-  useFormState,
-  type ControllerProps,
-  type FieldPath,
-  type FieldValues,
-} from "react-hook-form"
-⋮----
-import { cn } from "@/lib/utils"
-import { Label } from "@/components/ui/label"
-⋮----
-type FormFieldContextValue<
-  TFieldValues extends FieldValues = FieldValues,
-  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
-> = {
-  name: TName
-}
-⋮----
-const FormField = <
-  TFieldValues extends FieldValues = FieldValues,
-  TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
->({
-  ...props
-}: ControllerProps<TFieldValues, TName>) =>
-⋮----
-const useFormField = () =>
-⋮----
-type FormItemContextValue = {
-  id: string
-}
-⋮----
-function FormItem(
-⋮----
-className=
-⋮----
-function FormLabel({
-  className,
-  ...props
-}: React.ComponentProps<typeof LabelPrimitive.Root>)
-⋮----
-function FormControl(
-⋮----
-function FormMessage(
-
-================
-File: src/components/ui/input.tsx
-================
-import { cn } from "@/lib/utils"
-⋮----
-function Input(
-⋮----
-className=
-
-================
-File: src/components/ui/label.tsx
-================
-import { cn } from "@/lib/utils"
-⋮----
-className=
-
-================
-File: src/components/ui/progress.tsx
-================
-import { cn } from "@/lib/utils"
-⋮----
-className=
-
-================
-File: src/components/ui/select.tsx
-================
-import { CheckIcon, ChevronDownIcon, ChevronUpIcon } from "lucide-react"
-⋮----
-import { cn } from "@/lib/utils"
-⋮----
-function Select({
-  ...props
-}: React.ComponentProps<typeof SelectPrimitive.Root>)
-⋮----
-function SelectGroup({
-  ...props
-}: React.ComponentProps<typeof SelectPrimitive.Group>)
-⋮----
-function SelectValue({
-  ...props
-}: React.ComponentProps<typeof SelectPrimitive.Value>)
-⋮----
-function SelectTrigger({
-  className,
-  size = "default",
-  children,
-  ...props
-}: React.ComponentProps<typeof SelectPrimitive.Trigger> & {
-  size?: "sm" | "default"
-})
-⋮----
-className=
-⋮----
-function SelectItem({
-  className,
-  children,
-  ...props
-}: React.ComponentProps<typeof SelectPrimitive.Item>)
-⋮----
-function SelectScrollUpButton({
-  className,
-  ...props
-}: React.ComponentProps<typeof SelectPrimitive.ScrollUpButton>)
-⋮----
-function SelectScrollDownButton({
-  className,
-  ...props
-}: React.ComponentProps<typeof SelectPrimitive.ScrollDownButton>)
-
-================
-File: src/components/ui/slider.tsx
-================
-import { cn } from "@/lib/utils"
-⋮----
-className=
-
-================
-File: src/components/ui/sonner.tsx
-================
-import { useTheme } from "next-themes"
-import { Toaster as Sonner, ToasterProps } from "sonner"
-⋮----
-const Toaster = (
-
-================
-File: src/components/ui/switch.tsx
-================
-import { cn } from "@/lib/utils"
-⋮----
-className=
-
-================
-File: src/components/ui/tabs.tsx
-================
-import { cn } from "@/lib/utils"
-⋮----
-className=
-
-================
-File: src/components/ui/textarea.tsx
-================
-import { cn } from "@/lib/utils"
-⋮----
-className=
-
-================
-File: src/hooks/use-confirmation-dialog.ts
-================
-import { useState } from "react";
-⋮----
-interface UseConfirmationDialogProps {
-  title: string;
-  description: string;
-  confirmText?: string;
-  cancelText?: string;
-  variant?: "default" | "destructive";
-}
-⋮----
-export function useConfirmationDialog()
-⋮----
-const confirm = (props: UseConfirmationDialogProps): Promise<boolean> =>
-⋮----
-// Handle cancel/close
-const handleCancel = () =>
-⋮----
-// Store cancel handler for later use
-
-================
-File: src/lib/auth-utils.ts
-================
-import { redirect } from "next/navigation";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-⋮----
-export async function requireAuth()
-⋮----
-export async function redirectIfAuthenticated()
-
-================
-File: src/lib/db.ts
-================
-import { PrismaClient } from "@prisma/client";
-
-================
-File: src/lib/utils.ts
-================
-import { clsx, type ClassValue } from "clsx"
-import { twMerge } from "tailwind-merge"
-⋮----
-export function cn(...inputs: ClassValue[])
-
-================
-File: src/types/next-auth.d.ts
-================
-import { DefaultSession } from "next-auth";
-⋮----
-interface Session {
-    user: {
-      id: string;
-    } & DefaultSession["user"];
-  }
-⋮----
-interface User {
-    id: string;
-  }
-⋮----
-interface JWT {
-    id: string;
-  }
-
-================
-File: tsconfig.json
-================
-{
-  "compilerOptions": {
-    "target": "ES2017",
-    "lib": ["dom", "dom.iterable", "esnext"],
-    "allowJs": true,
-    "skipLibCheck": true,
-    "strict": true,
-    "noEmit": true,
-    "esModuleInterop": true,
-    "module": "esnext",
-    "moduleResolution": "bundler",
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "jsx": "preserve",
-    "incremental": true,
-    "plugins": [
-      {
-        "name": "next"
-      }
-    ],
-    "paths": {
-      "@/*": ["./src/*"]
-    }
-  },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules"]
-}
-
-================
-File: .gitignore
-================
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
-
-# dependencies
-/node_modules
-/.pnp
-.pnp.*
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/versions
-
-# testing
-/coverage
-
-# next.js
-/.next/
-/out/
-
-# production
-/build
-
-# misc
-.DS_Store
-*.pem
-
-# debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
-
-# env files (can opt-in for committing if needed)
-.env*
-
-# vercel
-.vercel
-
-# typescript
-*.tsbuildinfo
-next-env.d.ts
-
-/src/generated/prisma
+{/* <ThemeProvider
+        attribute="class"
+        defaultTheme="system"
+        enableSystem
+        disableTransitionOnChange
+      >
+        {children}
+      </ThemeProvider> */}
 
 ================
 File: prisma/schema.prisma
@@ -2746,264 +3005,6 @@ model Comment {
   project        Project?      @relation(fields: [projectId], references: [id])
   progressPost   ProgressPost? @relation(fields: [progressPostId], references: [id])
   createdAt      DateTime      @default(now())
-}
-
-================
-File: src/app/login/login-form.tsx
-================
-import { useState } from "react";
-import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge";
-import { toast } from "sonner";
-⋮----
-interface OAuthOnlyError {
-  type: string;
-  email: string;
-  providers: string[];
-}
-⋮----
-const handleCredentialsSubmit = async (e: React.FormEvent) =>
-⋮----
-// Not a JSON error, handle as normal
-⋮----
-window.location.href = "/"; // Use window.location instead of router
-⋮----
-const handleSocialLogin = async (
-    provider: string,
-    redirectToSettings = false
-) =>
-⋮----
-const clearOAuthError = () =>
-⋮----
-{/* Enhanced OAuth-only Account Error */}
-⋮----
-{/* Only show social login and email form if no OAuth-only error */}
-⋮----
-{/* Social Login Buttons */}
-⋮----
-{/* Email/Password Form */}
-
-================
-File: src/app/settings/accounts/accounts-settings.tsx
-================
-import { useSession, signOut } from "next-auth/react";
-import { useState, useEffect } from "react";
-import { signIn } from "next-auth/react";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
-import { ChangePasswordDialog } from "@/components/change-password-dialog";
-import { useConfirmationDialog } from "@/hooks/use-confirmation-dialog";
-import { toast } from "sonner";
-⋮----
-interface LinkedAccount {
-  provider: string;
-  email?: string;
-  linkedAt: string;
-}
-⋮----
-interface UserAuthMethods {
-  hasPassword: boolean;
-  oauthProviders: string[];
-  email: string;
-}
-⋮----
-// Handle welcome message from OAuth-only error flow
-⋮----
-const fetchLinkedAccounts = async () =>
-⋮----
-const fetchUserAuthMethods = async () =>
-⋮----
-const linkAccount = async (provider: string) =>
-⋮----
-const unlinkAccount = async (provider: string) =>
-⋮----
-const isLinked = (provider: string)
-⋮----
-{/* Google Account */}
-⋮----
-{/* GitHub Account */}
-⋮----
-{/* Password Management Section */}
-⋮----
-{/* Add Password - Only show if user doesn't have a password */}
-⋮----
-{/* Change Password - Only show if user has a password */}
-⋮----
-{/* Render dialogs */}
-
-================
-File: src/app/settings/layout.tsx
-================
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { Card, CardContent } from "@/components/ui/card";
-import { cn } from "@/lib/utils";
-⋮----
-{/* Settings Navigation */}
-⋮----
-{/* Settings Content */}
-
-================
-File: src/components/navbar.tsx
-================
-import { useSession, signOut } from 'next-auth/react'
-import Link from 'next/link'
-import { Button } from '@/components/ui/button'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import { ThemeToggle } from "@/components/theme-toggle";
-
-================
-File: src/components/providers.tsx
-================
-import { SessionProvider } from 'next-auth/react'
-import { ThemeProvider } from 'next-themes'
-import { ReactNode } from 'react'
-⋮----
-interface ProvidersProps {
-  children: ReactNode
-}
-⋮----
-export function Providers(
-⋮----
-{/* <ThemeProvider
-        attribute="class"
-        defaultTheme="system"
-        enableSystem
-        disableTransitionOnChange
-      >
-        {children}
-      </ThemeProvider> */}
-
-================
-File: src/lib/auth.ts
-================
-// src/lib/auth.ts
-import { NextAuthOptions } from "next-auth";
-import CredentialsProvider from "next-auth/providers/credentials";
-import GoogleProvider from "next-auth/providers/google";
-import GitHubProvider from "next-auth/providers/github";
-import { PrismaAdapter } from "@next-auth/prisma-adapter";
-import { prisma } from "@/lib/db";
-import bcrypt from "bcryptjs";
-⋮----
-async authorize(credentials)
-⋮----
-strategy: "jwt", // ✅ Change from 'database' to 'jwt'
-⋮----
-async jwt(
-⋮----
-// Store user data in JWT token
-⋮----
-async session(
-⋮----
-// Pass user data from JWT token to session
-⋮----
-async signIn(
-⋮----
-// Allow credentials sign-in
-⋮----
-// Handle OAuth account linking (your existing logic)
-
-================
-File: package.json
-================
-{
-  "name": "diy-tech-hub",
-  "version": "0.1.0",
-  "private": true,
-  "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint",
-    "db:push": "dotenv -e .env.local -- npx prisma db push",
-    "db:push-force": "dotenv -e .env.local -- npx prisma db push --force-reset",
-    "db:pull": "dotenv -e .env.local -- npx prisma db pull",
-    "prisma:generate": "dotenv -e .env.local -- npx prisma generate",
-    "prisma:studio": "dotenv -e .env.local -- npx prisma studio",
-    "migrate:dev": "dotenv -e .env.local -- npx prisma migrate dev"
-  },
-  "dependencies": {
-    "@hookform/resolvers": "^5.2.0",
-    "@next-auth/prisma-adapter": "^1.0.7",
-    "@prisma/client": "^6.12.0",
-    "@radix-ui/react-avatar": "^1.1.10",
-    "@radix-ui/react-checkbox": "^1.3.2",
-    "@radix-ui/react-collapsible": "^1.1.11",
-    "@radix-ui/react-dialog": "^1.1.14",
-    "@radix-ui/react-dropdown-menu": "^2.1.15",
-    "@radix-ui/react-label": "^2.1.7",
-    "@radix-ui/react-popover": "^1.1.14",
-    "@radix-ui/react-progress": "^1.1.7",
-    "@radix-ui/react-select": "^2.2.5",
-    "@radix-ui/react-slider": "^1.3.5",
-    "@radix-ui/react-slot": "^1.2.3",
-    "@radix-ui/react-switch": "^1.2.5",
-    "@radix-ui/react-tabs": "^1.1.12",
-    "bcryptjs": "^3.0.2",
-    "class-variance-authority": "^0.7.1",
-    "cloudinary": "^2.7.0",
-    "clsx": "^2.1.1",
-    "date-fns": "^4.1.0",
-    "dotenv-cli": "^9.0.0",
-    "lucide-react": "^0.526.0",
-    "next": "15.4.4",
-    "next-auth": "^4.24.11",
-    "next-themes": "^0.4.6",
-    "prisma": "^6.12.0",
-    "react": "19.1.0",
-    "react-day-picker": "^9.8.1",
-    "react-dnd": "^16.0.1",
-    "react-dnd-html5-backend": "^16.0.1",
-    "react-dom": "19.1.0",
-    "react-hook-form": "^7.61.1",
-    "sonner": "^2.0.6",
-    "tailwind-merge": "^3.3.1",
-    "zod": "^4.0.10"
-  },
-  "devDependencies": {
-    "@eslint/eslintrc": "^3",
-    "@tailwindcss/postcss": "^4",
-    "@types/bcryptjs": "^2.4.6",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "eslint": "^9",
-    "eslint-config-next": "15.4.4",
-    "tailwindcss": "^4",
-    "tw-animate-css": "^1.3.6",
-    "typescript": "^5"
-  }
 }
 
 ================
@@ -3236,6 +3237,124 @@ import { cn } from "@/lib/utils";
 import { Toaster } from "sonner";
 import { Providers } from "@/components/providers";
 import { Navbar } from "@/components/navbar";
+
+================
+File: src/components/navbar.tsx
+================
+import { useSession, signOut } from 'next-auth/react'
+import Link from 'next/link'
+import { Button } from '@/components/ui/button'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { ThemeToggle } from "@/components/theme-toggle";
+
+================
+File: src/lib/auth.ts
+================
+// src/lib/auth.ts
+import { NextAuthOptions } from "next-auth";
+import CredentialsProvider from "next-auth/providers/credentials";
+import GoogleProvider from "next-auth/providers/google";
+import GitHubProvider from "next-auth/providers/github";
+import { PrismaAdapter } from "@next-auth/prisma-adapter";
+import { prisma } from "@/lib/db";
+import bcrypt from "bcryptjs";
+⋮----
+async authorize(credentials)
+⋮----
+strategy: "jwt", // ✅ Change from 'database' to 'jwt'
+⋮----
+async jwt(
+⋮----
+// Store user data in JWT token
+⋮----
+async session(
+⋮----
+// Pass user data from JWT token to session
+⋮----
+async signIn(
+⋮----
+// Allow credentials sign-in
+⋮----
+// Handle OAuth account linking (your existing logic)
+
+================
+File: package.json
+================
+{
+  "name": "diy-tech-hub",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "db:push": "dotenv -e .env.local -- npx prisma db push",
+    "db:push-force": "dotenv -e .env.local -- npx prisma db push --force-reset",
+    "db:pull": "dotenv -e .env.local -- npx prisma db pull",
+    "prisma:generate": "dotenv -e .env.local -- npx prisma generate",
+    "prisma:studio": "dotenv -e .env.local -- npx prisma studio",
+    "migrate:dev": "dotenv -e .env.local -- npx prisma migrate dev"
+  },
+  "dependencies": {
+    "@hookform/resolvers": "^5.2.0",
+    "@next-auth/prisma-adapter": "^1.0.7",
+    "@prisma/client": "^6.12.0",
+    "@radix-ui/react-avatar": "^1.1.10",
+    "@radix-ui/react-checkbox": "^1.3.2",
+    "@radix-ui/react-collapsible": "^1.1.11",
+    "@radix-ui/react-dialog": "^1.1.14",
+    "@radix-ui/react-dropdown-menu": "^2.1.15",
+    "@radix-ui/react-label": "^2.1.7",
+    "@radix-ui/react-popover": "^1.1.14",
+    "@radix-ui/react-progress": "^1.1.7",
+    "@radix-ui/react-select": "^2.2.5",
+    "@radix-ui/react-slider": "^1.3.5",
+    "@radix-ui/react-slot": "^1.2.3",
+    "@radix-ui/react-switch": "^1.2.5",
+    "@radix-ui/react-tabs": "^1.1.12",
+    "bcryptjs": "^3.0.2",
+    "class-variance-authority": "^0.7.1",
+    "cloudinary": "^2.7.0",
+    "clsx": "^2.1.1",
+    "date-fns": "^4.1.0",
+    "dotenv-cli": "^9.0.0",
+    "lucide-react": "^0.526.0",
+    "next": "15.4.4",
+    "next-auth": "^4.24.11",
+    "next-themes": "^0.4.6",
+    "prisma": "^6.12.0",
+    "react": "19.1.0",
+    "react-day-picker": "^9.8.1",
+    "react-dnd": "^16.0.1",
+    "react-dnd-html5-backend": "^16.0.1",
+    "react-dom": "19.1.0",
+    "react-hook-form": "^7.61.1",
+    "sonner": "^2.0.6",
+    "tailwind-merge": "^3.3.1",
+    "zod": "^4.0.10"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3",
+    "@tailwindcss/postcss": "^4",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "15.4.4",
+    "tailwindcss": "^4",
+    "tw-animate-css": "^1.3.6",
+    "typescript": "^5"
+  }
+}
 
 ================
 File: src/app/page.tsx

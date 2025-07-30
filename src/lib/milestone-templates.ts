@@ -1,10 +1,25 @@
+import {
+  ClipboardList,
+  Brush,
+  Rocket,
+  Settings,
+  CheckCircle,
+  Search,
+  MessageCircle,
+  Eye,
+  Flag,
+  BarChart2,
+} from "lucide-react";
+
+import type { LucideIcon } from "lucide-react";
+
 export interface MilestoneTemplate {
   id: string;
   name: string;
   description: string;
   suggestedDuration: number; // days from project start
   category: "planning" | "development" | "testing" | "launch" | "review";
-  icon: string;
+  icon: LucideIcon;
 }
 
 export const MILESTONE_TEMPLATES: MilestoneTemplate[] = [
@@ -14,7 +29,7 @@ export const MILESTONE_TEMPLATES: MilestoneTemplate[] = [
     description: "Initial planning, requirements gathering, and project setup",
     suggestedDuration: 14,
     category: "planning",
-    icon: "📋",
+    icon: ClipboardList,
   },
   {
     id: "research-design",
@@ -22,7 +37,7 @@ export const MILESTONE_TEMPLATES: MilestoneTemplate[] = [
     description: "Research, prototyping, and design work",
     suggestedDuration: 30,
     category: "planning",
-    icon: "🎨",
+    icon: Brush,
   },
   {
     id: "development-start",
@@ -30,7 +45,7 @@ export const MILESTONE_TEMPLATES: MilestoneTemplate[] = [
     description: "Begin main development or implementation work",
     suggestedDuration: 45,
     category: "development",
-    icon: "🚀",
+    icon: Rocket,
   },
   {
     id: "mid-development",
@@ -38,7 +53,7 @@ export const MILESTONE_TEMPLATES: MilestoneTemplate[] = [
     description: "Major progress check and course correction if needed",
     suggestedDuration: 75,
     category: "development",
-    icon: "⚙️",
+    icon: Settings,
   },
   {
     id: "development-complete",
@@ -46,7 +61,7 @@ export const MILESTONE_TEMPLATES: MilestoneTemplate[] = [
     description: "Main development work finished, ready for testing",
     suggestedDuration: 90,
     category: "development",
-    icon: "✅",
+    icon: CheckCircle,
   },
   {
     id: "testing-phase",
@@ -54,7 +69,7 @@ export const MILESTONE_TEMPLATES: MilestoneTemplate[] = [
     description: "Testing, bug fixes, and quality improvements",
     suggestedDuration: 105,
     category: "testing",
-    icon: "🔍",
+    icon: Search,
   },
   {
     id: "user-feedback",
@@ -62,7 +77,7 @@ export const MILESTONE_TEMPLATES: MilestoneTemplate[] = [
     description: "Gather feedback and make final improvements",
     suggestedDuration: 120,
     category: "review",
-    icon: "💬",
+    icon: MessageCircle,
   },
   {
     id: "final-review",
@@ -70,7 +85,7 @@ export const MILESTONE_TEMPLATES: MilestoneTemplate[] = [
     description: "Final review, approval, and preparation for launch",
     suggestedDuration: 130,
     category: "review",
-    icon: "👀",
+    icon: Eye,
   },
   {
     id: "launch",
@@ -78,7 +93,7 @@ export const MILESTONE_TEMPLATES: MilestoneTemplate[] = [
     description: "Project launch, deployment, or final delivery",
     suggestedDuration: 140,
     category: "launch",
-    icon: "🎉",
+    icon: Flag,
   },
   {
     id: "post-launch",
@@ -87,7 +102,7 @@ export const MILESTONE_TEMPLATES: MilestoneTemplate[] = [
       "Monitor results, gather insights, and document lessons learned",
     suggestedDuration: 160,
     category: "review",
-    icon: "📊",
+    icon: BarChart2,
   },
 ];
 

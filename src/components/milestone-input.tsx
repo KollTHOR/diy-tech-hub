@@ -42,11 +42,40 @@ import {
 } from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
 import {
-  MILESTONE_TEMPLATES,
   getMilestoneTemplatesByCategory,
-  calculateSuggestedDate,
+  MILESTONE_TEMPLATES,
   type MilestoneTemplate,
 } from "@/lib/milestone-templates";
+
+import {
+  ClipboardList,
+  Brush,
+  Rocket,
+  Settings,
+  CheckCircle,
+  Search,
+  MessageCircle,
+  Eye,
+  Flag,
+  BarChart2,
+} from "lucide-react";
+
+import type { LucideIcon } from "lucide-react";
+import React from "react";
+
+const ICON_OPTIONS = [
+  { name: "ClipboardList", Icon: ClipboardList },
+  { name: "Brush", Icon: Brush },
+  { name: "Rocket", Icon: Rocket },
+  { name: "Settings", Icon: Settings },
+  { name: "CheckCircle", Icon: CheckCircle },
+  { name: "Search", Icon: Search },
+  { name: "MessageCircle", Icon: MessageCircle },
+  { name: "Eye", Icon: Eye },
+  { name: "Flag", Icon: Flag },
+  { name: "BarChart2", Icon: BarChart2 },
+  // Add more icons as needed
+];
 
 interface Milestone {
   title: string;
@@ -54,8 +83,8 @@ interface Milestone {
   targetDate: string;
   isCompleted: boolean;
   isFromTemplate?: boolean;
-  templateId?: string;
-  icon?: string;
+  templateId?: string; // the id to find the template and its icon
+  icon?: string; // icon name from ICON_OPTIONS for custom milestones
 }
 
 interface MilestoneInputProps {
@@ -84,6 +113,69 @@ interface DraggableMilestoneProps {
   onMove: (dragIndex: number, hoverIndex: number) => void;
   canRemove: boolean;
   totalMilestones: number;
+}
+
+function renderMilestoneIcon(iconName?: string) {
+  const IconComp =
+    ICON_OPTIONS.find((opt) => opt.name === iconName)?.Icon || Target;
+  return <IconComp className="h-5 w-5 text-primary" />;
+}
+
+function getMilestoneIcon(milestone: Milestone): React.ReactElement {
+  if (milestone.isFromTemplate && milestone.templateId) {
+    const template = MILESTONE_TEMPLATES.find(
+      (t) => t.id === milestone.templateId
+    );
+    if (template && template.icon) {
+      const Icon = template.icon as LucideIcon;
+      return <Icon className="h-5 w-5 text-primary" />;
+    }
+  }
+  // For custom milestone use selected icon or default
+  return renderMilestoneIcon(milestone.icon);
+}
+
+function IconSelector({
+  selectedIconName,
+  onSelectIcon,
+}: {
+  selectedIconName?: string;
+  onSelectIcon: (iconName: string) => void;
+}) {
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          className="p-1 border rounded hover:bg-muted flex items-center justify-center"
+          aria-label="Select icon"
+        >
+          {selectedIconName ? (
+            React.createElement(
+              ICON_OPTIONS.find((opt) => opt.name === selectedIconName)?.Icon ||
+                ClipboardList,
+              { className: "w-5 h-5" }
+            )
+          ) : (
+            <ClipboardList className="w-5 h-5 text-muted-foreground" />
+          )}
+        </button>
+      </PopoverTrigger>
+      <PopoverContent className="grid grid-cols-5 gap-2 max-w-xs p-2">
+        {ICON_OPTIONS.map(({ name, Icon }) => (
+          <button
+            key={name}
+            type="button"
+            onClick={() => onSelectIcon(name)}
+            className="p-1 hover:bg-muted rounded flex items-center justify-center"
+            aria-label={`Select ${name}`}
+          >
+            <Icon className="w-5 h-5" />
+          </button>
+        ))}
+      </PopoverContent>
+    </Popover>
+  );
 }
 
 function DraggableMilestone({
@@ -156,9 +248,10 @@ function DraggableMilestone({
   return (
     <div
       ref={ref}
-      className={`p-4 border rounded-lg space-y-4 group transition-all ${
+      className={cn(
+        "p-4 border rounded-lg space-y-4 group transition-all",
         isDragging ? "opacity-50 rotate-1 scale-105" : "hover:shadow-md"
-      }`}
+      )}
       style={{ opacity: isDragging ? 0.5 : 1 }}
     >
       <div className="flex items-center justify-between">
@@ -170,10 +263,14 @@ function DraggableMilestone({
             <GripVertical className="h-4 w-4 text-muted-foreground" />
           </div>
           <h4 className="font-medium flex items-center gap-2">
+            {getMilestoneIcon(milestone)}
             Milestone {index + 1}
             {milestone.isFromTemplate && (
-              <Badge variant="secondary" className="text-xs">
-                <Sparkles className="h-3 w-3 mr-1" />
+              <Badge
+                variant="secondary"
+                className="text-xs flex items-center gap-1"
+              >
+                <Sparkles className="h-3 w-3" />
                 Template
               </Badge>
             )}
@@ -220,12 +317,23 @@ function DraggableMilestone({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor={`milestone-title-${index}`}>Milestone Title *</Label>
-          <Input
-            id={`milestone-title-${index}`}
-            placeholder="e.g., Complete wireframes"
-            value={milestone.title}
-            onChange={(e) => onUpdate(index, "title", e.target.value)}
-          />
+          <div className="flex items-center gap-2">
+            <Input
+              id={`milestone-title-${index}`}
+              placeholder="e.g., Complete wireframes"
+              value={milestone.title}
+              onChange={(e) => onUpdate(index, "title", e.target.value)}
+              className="flex-grow"
+            />
+            {/* Icon selector for custom icon selection */}
+            {/* Only allow selecting icon if NOT a template milestone */}
+            {!milestone.isFromTemplate && (
+              <IconSelector
+                selectedIconName={milestone.icon}
+                onSelectIcon={(iconName) => onUpdate(index, "icon", iconName)}
+              />
+            )}
+          </div>
         </div>
 
         <div className="space-y-2">
@@ -346,26 +454,29 @@ function MilestoneTemplateSelector({
               </CollapsibleTrigger>
 
               <CollapsibleContent className="space-y-2 pt-2">
-                {templates.map((template) => (
-                  <div
-                    key={template.id}
-                    className="p-3 border rounded-lg hover:bg-muted cursor-pointer transition-colors"
-                    onClick={() => handleSelectTemplate(template)}
-                  >
-                    <div className="flex items-start gap-3">
-                      <span className="text-2xl">{template.icon}</span>
-                      <div className="flex-1">
-                        <h4 className="font-medium">{template.name}</h4>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          {template.description}
-                        </p>
-                        <Badge variant="outline" className="mt-2 text-xs">
-                          ~{template.suggestedDuration} days from start
-                        </Badge>
+                {templates.map((template) => {
+                  const Icon = template.icon as LucideIcon;
+                  return (
+                    <div
+                      key={template.id}
+                      className="p-3 border rounded-lg hover:bg-muted cursor-pointer transition-colors"
+                      onClick={() => handleSelectTemplate(template)}
+                    >
+                      <div className="flex items-start gap-3">
+                        <Icon className="w-6 h-6 text-primary" />
+                        <div className="flex-1">
+                          <h4 className="font-medium">{template.name}</h4>
+                          <p className="text-sm text-muted-foreground mt-1">
+                            {template.description}
+                          </p>
+                          <Badge variant="outline" className="mt-2 text-xs">
+                            ~{template.suggestedDuration} days from start
+                          </Badge>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </CollapsibleContent>
             </Collapsible>
           ))}
@@ -406,8 +517,9 @@ export function MilestoneInput({
     const newMilestone: Milestone = {
       title: "",
       description: "",
-      targetDate: "", // ✅ Remove automatic date calculation - leave empty
+      targetDate: "",
       isCompleted: false,
+      icon: undefined, // start with no icon
     };
 
     onChange([...milestones, newMilestone]);
@@ -415,7 +527,6 @@ export function MilestoneInput({
 
   const addFromTemplate = (template: MilestoneTemplate) => {
     if (milestones.length < maxMilestones) {
-
       onChange([
         ...milestones,
         {
@@ -425,6 +536,7 @@ export function MilestoneInput({
           isCompleted: false,
           isFromTemplate: true,
           templateId: template.id,
+          // icon is stored in template so don't need here
         },
       ]);
     }

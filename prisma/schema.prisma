@@ -92,6 +92,7 @@ model Milestone {
   isCompleted Boolean   @default(false)
   completedAt DateTime?
   order       Int // Dynamic ordering, not fixed 1-5
+  icon        String?
   projectId   String
   project     Project   @relation(fields: [projectId], references: [id], onDelete: Cascade)
   createdAt   DateTime  @default(now())

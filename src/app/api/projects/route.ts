@@ -76,6 +76,7 @@ export async function POST(req: NextRequest) {
             description: milestone.description,
             targetDate: new Date(milestone.targetDate),
             isCompleted: milestone.isCompleted || false,
+            icon: milestone.icon,
             order: index + 1,
           })),
         },

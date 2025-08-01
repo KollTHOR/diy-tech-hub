@@ -11,9 +11,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { Plus, Edit, Eye, MessageCircle, Calendar, Clock } from "lucide-react";
+import { Plus, Edit, Eye, MessageCircle, Calendar } from "lucide-react";
 import Image from "next/image";
+import {
+  getStatusBadgeProps,
+  formatStatusLabel,
+  type ProjectStatus,
+} from "@/lib/status-utils"; // ✅ Import from centralized utility
 
 interface Project {
   id: string;
@@ -21,7 +25,6 @@ interface Project {
   description: string | null;
   imageUrl: string | null;
   status: string;
-  progress: number;
   difficulty: string;
   isPublished: boolean;
   createdAt: Date;
@@ -42,16 +45,7 @@ interface MyProjectsListProps {
   projects: Project[];
 }
 
-const STATUS_COLORS = {
-  PLANNING:
-    "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300",
-  IN_PROGRESS: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300",
-  COMPLETED:
-    "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
-  ON_HOLD:
-    "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300",
-  CANCELLED: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300",
-};
+// ✅ Remove the STATUS_COLORS constant - now using centralized utility
 
 export default function MyProjectsList({ projects }: MyProjectsListProps) {
   if (projects.length === 0) {
@@ -116,125 +110,130 @@ export default function MyProjectsList({ projects }: MyProjectsListProps) {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {projects.map((project) => (
-          <Card
-            key={project.id}
-            className="group hover:shadow-lg transition-shadow"
-          >
-            <CardHeader className="pb-3">
-              <div className="flex items-start justify-between">
-                <div className="flex-1 min-w-0">
-                  <CardTitle className="line-clamp-2 text-lg">
-                    {project.title}
-                  </CardTitle>
-                  {project.description && (
-                    <CardDescription className="line-clamp-2 mt-2">
-                      {project.description}
-                    </CardDescription>
-                  )}
-                </div>
-                <div className="flex items-center gap-1 ml-2">
-                  {!project.isPublished && (
-                    <Badge
-                      variant="outline"
-                      className="text-xs border-orange-500 text-orange-600"
-                    >
-                      Draft
-                    </Badge>
-                  )}
-                </div>
-              </div>
-            </CardHeader>
+        {projects.map((project) => {
+          // ✅ Use centralized status utility
+          const statusBadgeProps = getStatusBadgeProps(
+            project.status as ProjectStatus
+          );
 
-            {project.imageUrl && (
-              <div className="px-6 pb-3">
-                <Image
-                  src={project.imageUrl}
-                  alt={project.title}
-                  className="w-full h-32 object-cover rounded-md border"
-                />
-              </div>
-            )}
-
-            <CardContent className="space-y-4">
-              {/* Status and Progress */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <Badge
-                    className={
-                      STATUS_COLORS[
-                        project.status as keyof typeof STATUS_COLORS
-                      ]
-                    }
-                  >
-                    {project.status.replace("_", " ")}
-                  </Badge>
-                  <span className="text-sm text-muted-foreground">
-                    {project.progress}%
-                  </span>
+          return (
+            <Card
+              key={project.id}
+              className="group hover:shadow-lg transition-shadow"
+            >
+              <CardHeader className="pb-3">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1 min-w-0">
+                    <CardTitle className="line-clamp-2 text-lg">
+                      {project.title}
+                    </CardTitle>
+                    {project.description && (
+                      <CardDescription className="line-clamp-2 mt-2">
+                        {project.description}
+                      </CardDescription>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-1 ml-2">
+                    {!project.isPublished && (
+                      <Badge
+                        variant="outline"
+                        className="text-xs border-orange-500 text-orange-600"
+                      >
+                        Draft
+                      </Badge>
+                    )}
+                  </div>
                 </div>
-                <Progress value={project.progress} className="h-2" />
-              </div>
+              </CardHeader>
 
-              {/* Tags */}
-              {project.tags.length > 0 && (
-                <div className="flex flex-wrap gap-1">
-                  {project.tags.slice(0, 3).map(({ tag }) => (
-                    <Badge
-                      key={tag.id}
-                      variant="secondary"
-                      className="text-xs"
-                      style={{
-                        backgroundColor: tag.color
-                          ? `${tag.color}20`
-                          : undefined,
-                      }}
-                    >
-                      {tag.name}
-                    </Badge>
-                  ))}
-                  {project.tags.length > 3 && (
-                    <Badge variant="secondary" className="text-xs">
-                      +{project.tags.length - 3}
-                    </Badge>
-                  )}
+              {project.imageUrl && (
+                <div className="px-6 pb-3">
+                  <Image
+                    src={project.imageUrl}
+                    alt={project.title}
+                    width={400}
+                    height={192}
+                    className="w-full h-32 object-cover rounded-md border"
+                  />
                 </div>
               )}
 
-              {/* Meta Information */}
-              <div className="flex items-center justify-between text-xs text-muted-foreground">
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-1">
-                    <MessageCircle className="h-3 w-3" />
-                    {project._count.comments}
+              <CardContent className="space-y-4">
+                {/* Status and Progress */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    {/* ✅ Use centralized status badge props */}
+                    <Badge className={statusBadgeProps.className}>
+                      {statusBadgeProps.children}
+                    </Badge>
                   </div>
                 </div>
-                <div className="flex items-center gap-1">
-                  <Calendar className="h-3 w-3" />
-                  {formatDistanceToNow(new Date(project.updatedAt), {
-                    addSuffix: true,
-                  })}
-                </div>
-              </div>
 
-              {/* Actions */}
-              <div className="flex gap-2 pt-2">
-                <Button asChild size="sm" className="flex-1">
-                  <Link href={`/projects/${project.id}`}>
-                    <Eye className="h-3 w-3 mr-1" />
-                    View
-                  </Link>
-                </Button>
-                <Button asChild variant="outline" size="sm" className="flex-1">
-                  <Link href={`/projects/${project.id}/edit`}>
-                    <Edit className="h-3 w-3 mr-1" />
-                    Edit
-                  </Link>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+                {/* Tags */}
+                {project.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-1">
+                    {project.tags.slice(0, 3).map(({ tag }) => (
+                      <Badge
+                        key={tag.id}
+                        variant="secondary"
+                        className="text-xs"
+                        style={{
+                          backgroundColor: tag.color
+                            ? `${tag.color}20`
+                            : undefined,
+                        }}
+                      >
+                        {tag.name}
+                      </Badge>
+                    ))}
+                    {project.tags.length > 3 && (
+                      <Badge variant="secondary" className="text-xs">
+                        +{project.tags.length - 3}
+                      </Badge>
+                    )}
+                  </div>
+                )}
+
+                {/* Meta Information */}
+                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-1">
+                      <MessageCircle className="h-3 w-3" />
+                      {project._count.comments}
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Calendar className="h-3 w-3" />
+                    {formatDistanceToNow(new Date(project.updatedAt), {
+                      addSuffix: true,
+                    })}
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div className="flex gap-2 pt-2">
+                  <Button asChild size="sm" className="flex-1">
+                    <Link href={`/projects/${project.id}`}>
+                      <Eye className="h-3 w-3 mr-1" />
+                      View
+                    </Link>
+                  </Button>
+                  <Button
+                    asChild
+                    variant="outline"
+                    size="sm"
+                    className="flex-1"
+                  >
+                    <Link href={`/projects/${project.id}/edit`}>
+                      <Edit className="h-3 w-3 mr-1" />
+                      Edit
+                    </Link>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
     </div>
   );

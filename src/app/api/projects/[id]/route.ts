@@ -3,7 +3,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { calculateProgressFromMilestones } from "@/lib/milestone-utils";
 
 // PUT - Update existing project
 export async function PUT(
@@ -28,7 +27,7 @@ export async function PUT(
       difficulty,
       isPublished,
       tagIds,
-      milestones, // Add milestones
+      milestones,
     } = await req.json();
 
     // Verify project ownership
@@ -61,9 +60,17 @@ export async function PUT(
       );
     }
 
-    if (!tagIds || tagIds.length === 0) {
+    // ✅ Remove tag requirement - tags are now optional
+    // if (!tagIds || tagIds.length === 0) {
+    //   return NextResponse.json(
+    //     { error: "At least one tag is required" },
+    //     { status: 400 }
+    //   );
+    // }
+
+    if (!milestones || milestones.length === 0) {
       return NextResponse.json(
-        { error: "At least one tag is required" },
+        { error: "At least one milestone is required" },
         { status: 400 }
       );
     }
@@ -80,12 +87,17 @@ export async function PUT(
         difficulty: difficulty || "BEGINNER",
         isPublished: isPublished || false,
         // Update tags - remove old ones and add new ones
-        tags: {
-          deleteMany: {},
-          create: tagIds.map((tagId: string) => ({
-            tag: { connect: { id: tagId } },
-          })),
-        },
+        tags:
+          tagIds && tagIds.length > 0
+            ? {
+                deleteMany: {},
+                create: tagIds.map((tagId: string) => ({
+                  tag: { connect: { id: tagId } },
+                })),
+              }
+            : {
+                deleteMany: {},
+              },
         // Update milestones - remove old ones and add new ones
         milestones: {
           deleteMany: {},
@@ -93,6 +105,7 @@ export async function PUT(
             title: milestone.title.trim(),
             description: milestone.description?.trim() || null,
             targetDate: new Date(milestone.targetDate),
+            icon: milestone.icon || null, // ✅ Include icon field
             order: index + 1,
             isCompleted: milestone.isCompleted || false,
             completedAt: milestone.isCompleted ? new Date() : null,
@@ -118,33 +131,33 @@ export async function PUT(
       },
     });
 
-    // Calculate and update progress
-    const calculatedProgress = calculateProgressFromMilestones(
-      updatedProject.milestones
-    );
-    const finalProject = await prisma.project.update({
-      where: { id },
-      data: { progress: calculatedProgress },
-      include: {
-        author: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-          },
-        },
-        tags: {
-          include: {
-            tag: true,
-          },
-        },
-        milestones: {
-          orderBy: { order: "asc" },
-        },
-      },
-    });
+    // ✅ No longer need to calculate and update progress
+    // const calculatedProgress = calculateProgressFromMilestones(
+    //   updatedProject.milestones
+    // );
+    // const finalProject = await prisma.project.update({
+    //   where: { id },
+    //   data: { progress: calculatedProgress },
+    //   include: {
+    //     author: {
+    //       select: {
+    //         id: true,
+    //         name: true,
+    //         email: true,
+    //       },
+    //     },
+    //     tags: {
+    //       include: {
+    //         tag: true,
+    //       },
+    //     },
+    //     milestones: {
+    //       orderBy: { order: "asc" },
+    //     },
+    //   },
+    // });
 
-    return NextResponse.json(finalProject);
+    return NextResponse.json(updatedProject);
   } catch (error) {
     console.error("Update project error:", error);
     return NextResponse.json(
@@ -154,7 +167,7 @@ export async function PUT(
   }
 }
 
-// DELETE - Delete project (optional, if you want users to delete projects)
+// DELETE - Delete project
 export async function DELETE(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }

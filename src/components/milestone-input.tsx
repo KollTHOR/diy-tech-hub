@@ -9,11 +9,11 @@ import { Target, Plus } from "lucide-react";
 import React from "react";
 import { MilestoneItem } from "./milestone-item";
 import { MilestoneTemplateSelector } from "./milestone-template-selector";
-import type { Milestone, MilestoneTemplate } from "@/types/project";
+import type { UiMilestone, MilestoneTemplate } from "@/types/project";
 
 interface MilestoneInputProps {
-  milestones: Milestone[];
-  onChange: (milestones: Milestone[]) => void;
+  milestones: UiMilestone[];
+  onChange: (milestones: UiMilestone[]) => void;
   minMilestones?: number;
   maxMilestones?: number;
 }
@@ -74,7 +74,7 @@ export function MilestoneInput({
 
   const updateMilestone = (
     index: number,
-    field: keyof Milestone,
+    field: keyof UiMilestone,
     value: string | boolean
   ) => {
     const updated = [...milestones];

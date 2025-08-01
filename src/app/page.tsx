@@ -29,7 +29,8 @@ export default async function HomePage() {
                 isCompleted: true,
                 completedAt: true,
                 order: true,
-                
+                icon: true,
+
                 // Add any other fields required in UI
               },
               orderBy: { order: "asc" }, // sort milestones by order ascending

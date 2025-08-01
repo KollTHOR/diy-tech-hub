@@ -1,17 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // src/app/create/hooks/use-project-form.ts
-import { Tag } from "@/types/project";
 import { useState, useEffect } from "react";
-
-interface Milestone {
-  title: string;
-  description: string;
-  targetDate: string;
-  isCompleted: boolean;
-}
 
 import type {
   FormData,
+  Tag,
+  UiMilestone, // Import the centralized Milestone interface
 } from "@/types/project";
 
 export function useProjectForm() {
@@ -26,7 +20,7 @@ export function useProjectForm() {
     isPublished: false,
   });
 
-  const [milestones, setMilestones] = useState<Milestone[]>([
+  const [milestones, setMilestones] = useState<UiMilestone[]>([
     {
       title: "",
       description: "",
@@ -68,7 +62,7 @@ export function useProjectForm() {
     }));
   };
 
-  const updateMilestones = (newMilestones: Milestone[]) => {
+  const updateMilestones = (newMilestones: UiMilestone[]) => {
     setMilestones(newMilestones);
   };
 

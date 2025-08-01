@@ -29,17 +29,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ProjectDeleteDialog } from "@/components/project-delete-dialog";
 import { MilestoneInput } from "@/components/milestone-input";
-import { Tag } from "@/types/project";
-
-interface Milestone {
-  id: string;
-  title: string;
-  description: string | null;
-  targetDate: Date;
-  isCompleted: boolean;
-  completedAt: Date | null;
-  order: number;
-}
+import { Tag, UiMilestone } from "@/types/project";
 
 interface Project {
   id: string;
@@ -48,24 +38,16 @@ interface Project {
   content: string;
   imageUrl: string | null;
   status: string;
-  progress: number;
   difficulty: string;
   isPublished: boolean;
   tags: Array<{
     tag: Tag;
   }>;
-  milestones: Milestone[]; // Add milestones to project interface
+  milestones: UiMilestone[]; // Add milestones to project interface
 }
 
 interface ProjectEditFormProps {
   project: Project;
-}
-
-interface MilestoneInputType {
-  title: string;
-  description: string;
-  targetDate: string;
-  isCompleted: boolean;
 }
 
 const DIFFICULTY_OPTIONS = [
@@ -136,27 +118,41 @@ export default function ProjectEditForm({ project }: ProjectEditFormProps) {
     isPublished: project.isPublished,
   });
 
-  // Initialize milestones from project data
-  const [milestones, setMilestones] = useState<MilestoneInputType[]>(
+  const convertMilestoneForForm = (dbMilestone: any): UiMilestone => ({
+    id: dbMilestone.id, // ✅ Now included in interface
+    title: dbMilestone.title,
+    description: dbMilestone.description,
+    targetDate: dbMilestone.targetDate.toISOString().split("T")[0],
+    isCompleted: dbMilestone.isCompleted,
+    completedAt: dbMilestone.completedAt,
+    order: dbMilestone.order, // ✅ Now included in interface
+    projectId: dbMilestone.projectId, // ✅ Now included in interface
+    createdAt: dbMilestone.createdAt, // ✅ Now included in interface
+    updatedAt: dbMilestone.updatedAt, // ✅ Now included in interface
+    isFromTemplate: false,
+    templateId: undefined,
+    icon: dbMilestone.icon || undefined,
+  });
+
+  const [milestones, setMilestones] = useState<UiMilestone[]>(
     project.milestones.length > 0
       ? project.milestones
-          .sort((a, b) => a.order - b.order)
-          .map((m) => ({
-            title: m.title,
-            description: m.description || "",
-            targetDate: m.targetDate.toISOString().split("T")[0], // Convert to YYYY-MM-DD format
-            isCompleted: m.isCompleted,
-          }))
+          .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+          .map(convertMilestoneForForm)
       : [
           {
             title: "",
-            description: "",
+            description: null,
             targetDate: "",
             isCompleted: false,
+            isFromTemplate: false,
+            templateId: undefined,
+            icon: undefined,
+            completedAt: null,
+            // Database fields are optional for new milestones
           },
         ]
   );
-
   // Fetch available tags
   useEffect(() => {
     fetchTags();

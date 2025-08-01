@@ -8,16 +8,11 @@ import {
 } from "@/components/ui/card";
 import { MilestoneInput } from "@/components/milestone-input";
 
-interface Milestone {
-  title: string;
-  description: string;
-  targetDate: string;
-  isCompleted: boolean;
-}
+import type { UiMilestone } from "@/types/project";
 
 interface MilestonesTabProps {
-  milestones: Milestone[];
-  onUpdate: (milestones: Milestone[]) => void;
+  milestones: UiMilestone[];
+  onUpdate: (milestones: UiMilestone[]) => void;
 }
 
 export function MilestonesTab({ milestones, onUpdate }: MilestonesTabProps) {

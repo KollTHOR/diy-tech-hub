@@ -12,15 +12,23 @@ export interface Tag {
   usageCount?: number;
 }
 
-export interface Milestone {
+export interface UiMilestone {
+  // Database fields (from Prisma schema)
+  id?: string; // Optional for new milestones
   title: string;
   description: string | null;
-  targetDate: string;
+  targetDate: string | Date; // Allow both formats
   isCompleted: boolean;
+  completedAt?: Date | null;
+  order?: number; // Optional for new milestones
+  projectId?: string; // Optional for form usage
+  createdAt?: Date; // Optional for form usage
+  updatedAt?: Date; // Optional for form usage
+
+  // Form-specific fields
   isFromTemplate?: boolean;
   templateId?: string;
-  icon?: string;
-  completedAt?: Date | null;
+  icon?: string | null;
 }
 
 export interface MilestoneTemplate {

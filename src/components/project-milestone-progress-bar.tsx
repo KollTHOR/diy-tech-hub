@@ -2,21 +2,11 @@
 
 import React, { useMemo } from "react";
 import { cn } from "@/lib/utils";
-import type { Milestone } from "@/types/project";
-import { calculateProgressFromMilestones } from "@/lib/milestone-utils";
+import type { UiMilestone } from "@/types/project";
 import {
-  ClipboardList,
-  Brush,
-  Rocket,
-  Settings,
-  CheckCircle,
-  Search,
-  MessageCircle,
-  Eye,
-  Flag,
-  BarChart2,
-  Target,
-} from "lucide-react";
+  calculateProgressFromMilestones,
+  getMilestoneIcon,
+} from "@/lib/milestone-utils";
 import {
   Tooltip,
   TooltipContent,
@@ -24,33 +14,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
-const ICON_OPTIONS: Record<
-  string,
-  React.ComponentType<{ className?: string }>
-> = {
-  ClipboardList,
-  Brush,
-  Rocket,
-  Settings,
-  CheckCircle,
-  Search,
-  MessageCircle,
-  Eye,
-  Flag,
-  BarChart2,
-  Target,
-};
-
-function getMilestoneIcon(milestone: Milestone) {
-  const Icon =
-    milestone.icon && ICON_OPTIONS[milestone.icon]
-      ? ICON_OPTIONS[milestone.icon]
-      : Target;
-  return <Icon className="w-6 h-6" />;
-}
-
 interface ProjectMilestoneProgressBarProps {
-  milestones: Milestone[];
+  milestones: UiMilestone[];
   creationDate: string | Date;
   className?: string;
 }
@@ -150,7 +115,7 @@ export function ProjectMilestoneProgressBar({
                     )}
                     style={{ ...leftStyle, top: "50%" }}
                   >
-                    {getMilestoneIcon(milestone)}
+                    {getMilestoneIcon(milestone, "w-4 h-4")}
                   </div>
                 </TooltipTrigger>
                 <TooltipContent

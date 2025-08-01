@@ -1,8 +1,111 @@
 // src/lib/milestone-utils.ts
+import React from "react";
+import {
+  ClipboardList,
+  Brush,
+  Rocket,
+  Settings,
+  CheckCircle,
+  Search,
+  MessageCircle,
+  Eye,
+  Flag,
+  BarChart2,
+  Target,
+  CheckCircle2,
+  Circle,
+  AlertTriangle,
+} from "lucide-react";
+import { MILESTONE_TEMPLATES } from "@/lib/milestone-templates";
+import type { UiMilestone } from "@/types/project";
+
+
 interface MilestoneForCalculation {
   targetDate: Date;
   isCompleted: boolean;
   completedAt?: Date | null;
+}
+
+const ICON_OPTIONS: Record<
+  string,
+  React.ComponentType<{ className?: string }>
+> = {
+  ClipboardList,
+  Brush,
+  Rocket,
+  Settings,
+  CheckCircle,
+  Search,
+  MessageCircle,
+  Eye,
+  Flag,
+  BarChart2,
+  Target,
+};
+
+/**
+ * Main function to get milestone icon based on type and properties
+ * Handles both template milestones and custom milestones
+ */
+export function getMilestoneIcon(
+  milestone: UiMilestone,
+  className: string = "w-5 h-5"
+): React.ReactElement {
+  // For template milestones, use template icon
+  if (milestone.isFromTemplate && milestone.templateId) {
+    const template = MILESTONE_TEMPLATES.find(
+      (t) => t.id === milestone.templateId
+    );
+    if (template?.icon) {
+      const Icon = template.icon;
+      return <Icon className={className} />;
+    }
+  }
+
+  // For custom milestones, use selected icon
+  if (milestone.icon && ICON_OPTIONS[milestone.icon]) {
+    const Icon = ICON_OPTIONS[milestone.icon];
+    return <Icon className={className} />;
+  }
+
+  // Fallback to Target icon
+  return <Target className={className} />;
+}
+
+/**
+ * Get status-based milestone icon (completed, overdue, current, upcoming)
+ * Used for showing milestone progress status
+ */
+export function getMilestoneStatusIcon(
+  milestone: UiMilestone,
+  className: string = "w-5 h-5"
+): React.ReactElement {
+  if (milestone.isCompleted) {
+    return <CheckCircle2 className={`${className} text-green-600`} />;
+  }
+
+  const status = getMilestoneStatus(milestone);
+  switch (status) {
+    case "overdue":
+      return <AlertTriangle className={`${className} text-red-500`} />;
+    case "current":
+      return <Target className={`${className} text-blue-500`} />;
+    default:
+      return <Circle className={`${className} text-muted-foreground`} />;
+  }
+}
+
+export { ICON_OPTIONS };
+
+/**
+ * Render milestone icon by name - used by icon selector
+ */
+export function renderMilestoneIcon(
+  iconName?: string,
+  className: string = "w-5 h-5 text-primary"
+): React.ReactElement {
+  const IconComp = ICON_OPTIONS[iconName || ""] || ClipboardList;
+  return <IconComp className={className} />;
 }
 
 export function calculateProgressFromMilestones(
@@ -74,7 +177,7 @@ export function getNextMilestone(
 
 // ✅ Add the missing getMilestoneStatus function
 export function getMilestoneStatus(milestone: {
-  targetDate: Date;
+  targetDate: Date | string;
   isCompleted: boolean;
 }): "completed" | "overdue" | "current" | "upcoming" {
   // If milestone is completed, return completed status

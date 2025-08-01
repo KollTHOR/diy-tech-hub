@@ -3,7 +3,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { calculateProgressFromMilestones } from "@/lib/milestone-utils";
 
 // POST - Add a new milestone
 export async function POST(
@@ -17,7 +16,7 @@ export async function POST(
     }
 
     const { id } = await params;
-    const { title, description, targetDate } = await req.json();
+    const { title, description, targetDate, icon } = await req.json();
 
     // Verify project ownership
     const project = await prisma.project.findUnique({
@@ -53,25 +52,12 @@ export async function POST(
         description: description?.trim() || null,
         targetDate: new Date(targetDate),
         order: nextOrder,
+        icon: icon || null, // ✅ Include icon field
         projectId: id,
       },
     });
 
-    // Recalculate progress
-    const updatedProject = await prisma.project.findUnique({
-      where: { id },
-      include: { milestones: { orderBy: { order: "asc" } } },
-    });
-
-    if (updatedProject) {
-      const newProgress = calculateProgressFromMilestones(
-        updatedProject.milestones
-      );
-      await prisma.project.update({
-        where: { id },
-        data: { progress: newProgress },
-      });
-    }
+    // ✅ No longer need to recalculate and update progress
 
     return NextResponse.json(milestone, { status: 201 });
   } catch (error) {
@@ -95,7 +81,7 @@ export async function PATCH(
     }
 
     const { id } = await params;
-    const { milestoneId, isCompleted, title, description, targetDate } =
+    const { milestoneId, isCompleted, title, description, targetDate, icon } =
       await req.json();
 
     // Verify project ownership
@@ -122,27 +108,14 @@ export async function PATCH(
     if (description !== undefined)
       updateData.description = description?.trim() || null;
     if (targetDate) updateData.targetDate = new Date(targetDate);
+    if (icon !== undefined) updateData.icon = icon || null; // ✅ Include icon updates
 
     await prisma.milestone.update({
       where: { id: milestoneId },
       data: updateData,
     });
 
-    // Recalculate progress
-    const updatedProject = await prisma.project.findUnique({
-      where: { id },
-      include: { milestones: { orderBy: { order: "asc" } } },
-    });
-
-    if (updatedProject) {
-      const newProgress = calculateProgressFromMilestones(
-        updatedProject.milestones
-      );
-      await prisma.project.update({
-        where: { id },
-        data: { progress: newProgress },
-      });
-    }
+    // ✅ No longer need to recalculate and update progress
 
     return NextResponse.json({ success: true });
   } catch (error) {
@@ -197,21 +170,7 @@ export async function DELETE(
       where: { id: milestoneId },
     });
 
-    // Recalculate progress
-    const updatedProject = await prisma.project.findUnique({
-      where: { id },
-      include: { milestones: { orderBy: { order: "asc" } } },
-    });
-
-    if (updatedProject) {
-      const newProgress = calculateProgressFromMilestones(
-        updatedProject.milestones
-      );
-      await prisma.project.update({
-        where: { id },
-        data: { progress: newProgress },
-      });
-    }
+    // ✅ No longer need to recalculate and update progress
 
     return NextResponse.json({ success: true });
   } catch (error) {

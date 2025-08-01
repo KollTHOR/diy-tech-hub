@@ -72,7 +72,13 @@ export default function ProjectForm({ session }: ProjectFormProps) {
         body: JSON.stringify({
           ...formData,
           tags: selectedTags.map((tag: any) => tag.id),
-          milestones: validMilestones,
+          milestones: validMilestones.map((m) => ({
+            title: m.title,
+            description: m.description,
+            targetDate: m.targetDate,
+            isCompleted: m.isCompleted,
+            icon: m.icon, // ✅ Make sure this is included
+          })),
         }),
       });
 

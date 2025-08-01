@@ -54,15 +54,16 @@ async function getProject(id: string) {
       milestones: {
         select: {
           id: true,
-          projectId: true, // <-- ADD THIS
           title: true,
           description: true,
           targetDate: true,
           isCompleted: true,
           completedAt: true,
           order: true,
-          createdAt: true, // <-- ADD THIS
+          projectId: true,
+          createdAt: true,
           updatedAt: true,
+          icon: true,
         },
         orderBy: {
           order: "asc",

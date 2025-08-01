@@ -27,25 +27,26 @@ import {
 } from "@/lib/milestone-templates";
 import {
   IconSelector,
-  getMilestoneIcon,
 } from "./icon-selector";
+import { UiMilestone } from "@/types/project";
+import { getMilestoneIcon } from "@/lib/milestone-utils";
 
-interface Milestone {
-  title: string;
-  description: string;
-  targetDate: string;
-  isCompleted: boolean;
-  isFromTemplate?: boolean;
-  templateId?: string;
-  icon?: string;
-}
+// interface Milestone {
+//   title: string;
+//   description: string | null;
+//   targetDate: string | Date;
+//   isCompleted: boolean;
+//   isFromTemplate?: boolean;
+//   templateId?: string;
+//   icon?: string | null | undefined;
+// }
 
 interface MilestoneItemProps {
-  milestone: Milestone;
+  milestone: UiMilestone;
   index: number;
   onUpdate: (
     index: number,
-    field: keyof Milestone,
+    field: keyof UiMilestone,
     value: string | boolean
   ) => void;
   onRemove: (index: number) => void;
@@ -204,7 +205,7 @@ export function MilestoneItem({
             />
             {!milestone.isFromTemplate && (
               <IconSelector
-                selectedIconName={milestone.icon}
+                selectedIconName={milestone.icon as string}
                 onSelectIcon={(iconName: any) => onUpdate(index, "icon", iconName)}
               />
             )}
@@ -246,7 +247,7 @@ export function MilestoneItem({
         <Textarea
           id={`milestone-description-${index}`}
           placeholder="Describe what needs to be accomplished..."
-          value={milestone.description}
+          value={milestone.description as string}
           onChange={(e) => onUpdate(index, "description", e.target.value)}
           rows={2}
         />

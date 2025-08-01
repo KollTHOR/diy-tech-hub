@@ -38,7 +38,6 @@ interface ProjectViewProps {
     content: string;
     imageUrl: string | null;
     status: string;
-    progress: number;
     difficulty: string;
     isPublished: boolean;
     createdAt: Date;
@@ -320,7 +319,6 @@ export default function ProjectView({ project }: ProjectViewProps) {
                 <ProjectMilestoneProgressBar
                   milestones={milestonesForUI}
                   creationDate={project.createdAt}
-                  progress={project.progress}
                 />
               </div>
 

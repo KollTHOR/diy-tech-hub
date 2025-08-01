@@ -21,7 +21,6 @@ export async function GET(req: NextRequest) {
           id: true,
           title: true,
           imageUrl: true,
-          progress: true,
           tags: { include: { tag: true } },
         },
       },
@@ -88,7 +87,6 @@ export async function POST(req: NextRequest) {
             id: true,
             title: true,
             imageUrl: true,
-            progress: true,
           }
         }
       }

@@ -5,9 +5,7 @@ import { useState } from "react";
 import { formatDistanceToNow, format } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Progress } from "@/components/ui/progress";
 import {
   Calendar,
   CheckCircle2,
@@ -19,14 +17,16 @@ import {
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { getMilestoneStatus } from "@/lib/milestone-utils";
+import {
+  getMilestoneStatusIcon,
+  getMilestoneStatus,
+} from "@/lib/milestone-utils";
 import { Milestone } from "@prisma/client";
 
 
 interface ProjectMilestonesProps {
   projectId: string;
   milestones: Milestone[];
-  progress: number;
   isOwner: boolean;
   className?: string;
 }
@@ -34,7 +34,6 @@ interface ProjectMilestonesProps {
 export function ProjectMilestones({
   projectId,
   milestones,
-  progress,
   isOwner,
   className = "",
 }: ProjectMilestonesProps) {
@@ -78,21 +77,6 @@ export function ProjectMilestones({
     }
   };
 
-  const getMilestoneIcon = (milestone: Milestone) => {
-    if (milestone.isCompleted) {
-      return <CheckCircle2 className="h-5 w-5 text-green-600" />;
-    }
-
-    const status = getMilestoneStatus(milestone);
-    switch (status) {
-      case "overdue":
-        return <AlertTriangle className="h-5 w-5 text-red-500" />;
-      case "current":
-        return <Target className="h-5 w-5 text-blue-500" />;
-      default:
-        return <Circle className="h-5 w-5 text-muted-foreground" />;
-    }
-  };
 
   const getMilestoneStatusBadge = (milestone: Milestone) => {
     if (milestone.isCompleted) {
@@ -127,11 +111,10 @@ export function ProjectMilestones({
               Project Milestones
             </CardTitle>
             <div className="text-right">
-              <div className="text-2xl font-bold">{progress}%</div>
+              
               <div className="text-xs text-muted-foreground">Progress</div>
             </div>
           </div>
-          <Progress value={progress} className="mt-2" />
         </CardHeader>
 
         <CardContent className="space-y-4">
@@ -155,7 +138,7 @@ export function ProjectMilestones({
                 <div className="flex items-center gap-3 min-w-0 flex-1">
                   {/* Milestone Icon */}
                   <div className="flex-shrink-0">
-                    {getMilestoneIcon(milestone)}
+                    {getMilestoneStatusIcon(milestone, "h-5 w-5")}
                   </div>
 
                   {/* Milestone Content */}
@@ -224,7 +207,7 @@ export function ProjectMilestones({
             </div>
             <div className="flex justify-between text-sm mt-1">
               <span>Time-based Progress:</span>
-              <span className="font-medium">{progress}%</span>
+              
             </div>
           </div>
         </CardContent>
